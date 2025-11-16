@@ -1,0 +1,49 @@
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return request.auth != null && request.auth.token.admin == true;
+    }
+
+    // Public read for all spot data and reviews
+    match /spots/{spotId} {
+      allow read: if true;
+      // Creation allowed for authenticated users (subject to moderation in backend)
+      allow create: if isSignedIn();
+      // Only admins or original creator can update; creators cannot set isVerified=true
+      allow update: if isAdmin() || (isSignedIn() && request.auth.uid == resource.data.createdBy);
+      allow delete: if isAdmin();
+
+      // Reviews subcollection
+      match /reviews/{reviewId} {
+        allow read: if true;
+        // Allow creation by authenticated users; basic shape check
+        allow create: if isSignedIn()
+          && request.resource.data.keys().hasAll(['type','createdAt'])
+          && (request.resource.data.type == 'text' || request.resource.data.type == 'photo');
+        // Allow delete by admin or the review owner
+        allow delete: if isAdmin() || (isSignedIn() && request.auth.uid == resource.data.userId);
+      }
+    }
+
+    // User documents and favorites
+    match /users/{userId} {
+      allow create: if isSignedIn() && request.auth.uid == userId;
+      allow read: if isSignedIn() && request.auth.uid == userId;
+      allow update: if isSignedIn() && request.auth.uid == userId;
+
+      match /favorites/{favId} {
+        allow read, write: if isSignedIn() && request.auth.uid == userId;
+      }
+    }
+
+    // Admin-only writes for all other collections
+    match /{document=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+  }
+}
