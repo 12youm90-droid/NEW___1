@@ -1,0 +1,20 @@
+{
+  "name": "포토스팟 커뮤니티",
+  "forwardPorts": [3000, 8000],
+  "portsAttributes": {
+    "3000": {
+      "label": "Backend API",
+      "onAutoForward": "notify",
+      "visibility": "public",
+      "protocol": "http"
+    },
+    "8000": {
+      "label": "Frontend",
+      "onAutoForward": "notify",
+      "visibility": "public",
+      "protocol": "http"
+    }
+  },
+  "postCreateCommand": "chmod +x start-servers.sh deploy.sh keep-servers-alive.sh",
+  "postStartCommand": "bash -c 'if [ -f /workspaces/NEW___1/start-servers.sh ]; then /workspaces/NEW___1/start-servers.sh; fi'"
+}
