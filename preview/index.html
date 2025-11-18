@@ -666,6 +666,73 @@
       padding: 20px;
     }
 
+    .nearby-section {
+      margin: 24px 0;
+      padding: 20px;
+      background: #fff9f0;
+      border-radius: 12px;
+      border: 2px solid #ffe4b5;
+    }
+
+    .nearby-section h3 {
+      margin-bottom: 16px;
+      font-size: 18px;
+      color: #5a4a3a;
+    }
+
+    .accommodations-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .accommodation-item {
+      background: white;
+      padding: 15px;
+      border-radius: 8px;
+      border: 1px solid #e9ecef;
+      transition: all 0.3s;
+      cursor: pointer;
+    }
+
+    .accommodation-item:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .accommodation-name {
+      font-weight: 600;
+      font-size: 15px;
+      color: #2d3436;
+      margin-bottom: 6px;
+    }
+
+    .accommodation-category {
+      display: inline-block;
+      padding: 3px 8px;
+      background: #4ecdc4;
+      color: white;
+      border-radius: 4px;
+      font-size: 11px;
+      margin-bottom: 6px;
+    }
+
+    .accommodation-address {
+      font-size: 12px;
+      color: #666;
+      margin-bottom: 6px;
+    }
+
+    .accommodation-distance {
+      font-size: 12px;
+      color: #888;
+      margin-bottom: 8px;
+    }
+
+    .accommodation-phone {
+      font-size: 12px;
+      color: #4ecdc4;
+    }
+
     .comments-section {
       margin-top: 24px;
       padding-top: 24px;
@@ -1096,6 +1163,12 @@
               <button onclick="cancelInlineEdit()" style="flex: 1; padding: 12px; background: #999; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">취소</button>
             </div>
           </div>
+        </div>
+
+        <!-- 근처 숙박업소 추천 -->
+        <div id="nearbyAccommodations" class="nearby-section" style="display: none;">
+          <h3>🏨 근처 숙박업소</h3>
+          <div id="accommodationsList" class="accommodations-list"></div>
         </div>
 
         <div class="comments-section">
@@ -1773,6 +1846,9 @@
       updateGallery();
 
       renderComments();
+      
+      // 근처 숙박업소 검색
+      searchNearbyAccommodations(currentSpot);
 
       const detailView = document.getElementById('detailView');
       detailView.classList.add('active');
@@ -2788,6 +2864,54 @@
       document.getElementById('editPlaceName').value = placeName || '';
       document.getElementById('placeResults').style.display = 'none';
       document.getElementById('placeResults').innerHTML = '';
+    }
+
+    // 근처 숙박업소 검색
+    async function searchNearbyAccommodations(spot) {
+      const nearbySection = document.getElementById('nearbyAccommodations');
+      const accommodationsList = document.getElementById('accommodationsList');
+      
+      // 좌표가 없으면 숨김
+      if (!spot.lat || !spot.lng) {
+        nearbySection.style.display = 'none';
+        return;
+      }
+
+      nearbySection.style.display = 'block';
+      accommodationsList.innerHTML = '<div style="text-align: center; padding: 20px; color: #888;"><i class="fas fa-spinner fa-spin"></i> 검색 중...</div>';
+
+      try {
+        // 서버에서 근처 숙박업소 검색
+        const response = await fetch(`http://localhost:3000/api/nearby-accommodations?lat=${spot.lat}&lng=${spot.lng}&radius=2000`);
+        
+        if (!response.ok) {
+          throw new Error('검색 실패');
+        }
+
+        const data = await response.json();
+        
+        if (!data.accommodations || data.accommodations.length === 0) {
+          accommodationsList.innerHTML = '<div style="text-align: center; padding: 20px; color: #888;">근처에 숙박업소가 없습니다.</div>';
+          return;
+        }
+
+        // 숙박업소 목록 렌더링
+        accommodationsList.innerHTML = data.accommodations.map(acc => `
+          <div class="accommodation-item" onclick="window.open('https://map.kakao.com/link/to/${encodeURIComponent(acc.name)},${acc.lat},${acc.lng}', '_blank')">
+            <div>
+              <span class="accommodation-category">${acc.category}</span>
+              <div class="accommodation-name">${acc.name}</div>
+            </div>
+            <div class="accommodation-address">📍 ${acc.address}</div>
+            <div class="accommodation-distance">📏 ${acc.distance}m</div>
+            ${acc.phone ? `<div class="accommodation-phone">📞 ${acc.phone}</div>` : ''}
+          </div>
+        `).join('');
+
+      } catch (error) {
+        console.error('숙박업소 검색 오류:', error);
+        accommodationsList.innerHTML = '<div style="text-align: center; padding: 20px; color: #888;">검색 중 오류가 발생했습니다.</div>';
+      }
     }
 
     // 페이지 초기화

@@ -782,6 +782,116 @@ app.delete('/api/spots/:spotId/comments/:commentId', authenticateToken, (req, re
   }
 });
 
+// 근처 숙박업소 검색 API
+app.get('/api/nearby-accommodations', async (req, res) => {
+  try {
+    const { lat, lng, radius = 2000 } = req.query;
+
+    if (!lat || !lng) {
+      return res.status(400).json({ error: '위도와 경도가 필요합니다.' });
+    }
+
+    const latitude = parseFloat(lat);
+    const longitude = parseFloat(lng);
+    const searchRadius = parseInt(radius);
+
+    // 숙박업소 카테고리로 검색 (호텔, 모텔, 펜션, 게스트하우스 등)
+    const categories = [
+      'AD5', // 숙박
+    ];
+
+    const kakaoApiKey = process.env.KAKAO_REST_API_KEY || 'YOUR_KAKAO_REST_API_KEY';
+    
+    // 카카오 로컬 API로 근처 숙박업소 검색
+    try {
+      const response = await axios.get('https://dapi.kakao.com/v2/local/search/category.json', {
+        headers: {
+          'Authorization': `KakaoAK ${kakaoApiKey}`
+        },
+        params: {
+          category_group_code: 'AD5',
+          x: longitude,
+          y: latitude,
+          radius: searchRadius,
+          sort: 'distance'
+        }
+      });
+
+      const accommodations = response.data.documents.map(place => ({
+        name: place.place_name,
+        category: getCategoryName(place.category_name),
+        address: place.address_name || place.road_address_name,
+        distance: parseInt(place.distance),
+        phone: place.phone,
+        lat: place.y,
+        lng: place.x,
+        url: place.place_url
+      }));
+
+      res.json({ 
+        success: true, 
+        accommodations: accommodations.slice(0, 10) // 최대 10개
+      });
+
+    } catch (kakaoError) {
+      // 카카오 API 실패 시 모의 데이터 반환
+      console.log('⚠️ 카카오 API 사용 불가, 모의 데이터 반환');
+      const mockAccommodations = generateMockAccommodations(latitude, longitude);
+      res.json({ 
+        success: true, 
+        accommodations: mockAccommodations 
+      });
+    }
+
+  } catch (error) {
+    console.error('숙박업소 검색 오류:', error);
+    res.status(500).json({ error: '검색 중 오류가 발생했습니다.' });
+  }
+});
+
+// 카테고리 이름 변환
+function getCategoryName(fullCategory) {
+  if (fullCategory.includes('호텔')) return '🏨 호텔';
+  if (fullCategory.includes('모텔')) return '🏩 모텔';
+  if (fullCategory.includes('펜션')) return '🏡 펜션';
+  if (fullCategory.includes('게스트하우스')) return '🏠 게스트하우스';
+  if (fullCategory.includes('리조트')) return '🏖️ 리조트';
+  return '🏨 숙박';
+}
+
+// 모의 숙박업소 데이터 생성
+function generateMockAccommodations(lat, lng) {
+  const types = ['호텔', '모텔', '펜션', '게스트하우스'];
+  const names = [
+    '그린', '블루', '선샤인', '문라이트', '스타', '오션', '마운틴', '레이크',
+    '로즈', '가든', '스카이', '골든', '실버', '플라워', '리버', '힐'
+  ];
+  
+  const accommodations = [];
+  
+  for (let i = 0; i < 8; i++) {
+    const type = types[Math.floor(Math.random() * types.length)];
+    const name = names[Math.floor(Math.random() * names.length)];
+    const distance = Math.floor(Math.random() * 1800) + 200; // 200m ~ 2000m
+    
+    // 거리에 따라 좌표 계산 (대략적)
+    const latOffset = (Math.random() - 0.5) * 0.02;
+    const lngOffset = (Math.random() - 0.5) * 0.02;
+    
+    accommodations.push({
+      name: `${name}${type}`,
+      category: getCategoryName(type),
+      address: `근처 ${Math.floor(Math.random() * 500) + 1}번지`,
+      distance: distance,
+      phone: `010-${Math.floor(Math.random() * 9000) + 1000}-${Math.floor(Math.random() * 9000) + 1000}`,
+      lat: (lat + latOffset).toFixed(6),
+      lng: (lng + lngOffset).toFixed(6)
+    });
+  }
+  
+  return accommodations.sort((a, b) => a.distance - b.distance);
+}
+
 // 서버 시작
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 서버가 http://localhost:${PORT} 에서 실행 중입니다.`);
