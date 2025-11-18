@@ -16,6 +16,13 @@
       "githubLogin": "12youm90-droid",
       "githubAvatar": "https://avatars.githubusercontent.com/u/244266469?v=4",
       "createdAt": "2025-11-16T17:23:26.570Z"
+    },
+    {
+      "id": 3,
+      "username": "0123",
+      "password": "$2a$10$oQyKMhYw0PD2i1/BTQVk3edrgN98yHHRg.iYVdpu8stxq0DRlVMAO",
+      "nickname": "12",
+      "createdAt": "2025-11-18T05:37:56.295Z"
     }
   ]
 }

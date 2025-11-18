@@ -892,6 +892,117 @@ function generateMockAccommodations(lat, lng) {
   return accommodations.sort((a, b) => a.distance - b.distance);
 }
 
+// 근처 맛집 검색 API
+app.get('/api/nearby-restaurants', async (req, res) => {
+  try {
+    const { lat, lng, radius = 1500 } = req.query;
+
+    if (!lat || !lng) {
+      return res.status(400).json({ error: '위도와 경도가 필요합니다.' });
+    }
+
+    const latitude = parseFloat(lat);
+    const longitude = parseFloat(lng);
+    const searchRadius = parseInt(radius);
+
+    const kakaoApiKey = process.env.KAKAO_REST_API_KEY || 'YOUR_KAKAO_REST_API_KEY';
+    
+    // 카카오 로컬 API로 근처 음식점 검색
+    try {
+      const response = await axios.get('https://dapi.kakao.com/v2/local/search/category.json', {
+        headers: {
+          'Authorization': `KakaoAK ${kakaoApiKey}`
+        },
+        params: {
+          category_group_code: 'FD6', // 음식점
+          x: longitude,
+          y: latitude,
+          radius: searchRadius,
+          sort: 'distance'
+        }
+      });
+
+      const restaurants = response.data.documents.map(place => ({
+        name: place.place_name,
+        category: getRestaurantCategory(place.category_name),
+        address: place.address_name || place.road_address_name,
+        distance: parseInt(place.distance),
+        phone: place.phone,
+        lat: place.y,
+        lng: place.x,
+        url: place.place_url
+      }));
+
+      res.json({ 
+        success: true, 
+        restaurants: restaurants.slice(0, 10) // 최대 10개
+      });
+
+    } catch (kakaoError) {
+      // 카카오 API 실패 시 모의 데이터 반환
+      console.log('⚠️ 카카오 API 사용 불가, 모의 데이터 반환');
+      const mockRestaurants = generateMockRestaurants(latitude, longitude);
+      res.json({ 
+        success: true, 
+        restaurants: mockRestaurants 
+      });
+    }
+
+  } catch (error) {
+    console.error('맛집 검색 오류:', error);
+    res.status(500).json({ error: '검색 중 오류가 발생했습니다.' });
+  }
+});
+
+// 음식점 카테고리 이름 변환
+function getRestaurantCategory(fullCategory) {
+  if (fullCategory.includes('한식')) return '🍚 한식';
+  if (fullCategory.includes('중식')) return '🥢 중식';
+  if (fullCategory.includes('일식')) return '🍱 일식';
+  if (fullCategory.includes('양식')) return '🍝 양식';
+  if (fullCategory.includes('카페')) return '☕ 카페';
+  if (fullCategory.includes('분식')) return '🍜 분식';
+  if (fullCategory.includes('치킨')) return '🍗 치킨';
+  if (fullCategory.includes('피자')) return '🍕 피자';
+  if (fullCategory.includes('고기')) return '🥩 고깃집';
+  if (fullCategory.includes('회')) return '🍣 횟집';
+  if (fullCategory.includes('술집')) return '🍺 주점';
+  if (fullCategory.includes('패스트푸드')) return '🍔 패스트푸드';
+  return '🍽️ 음식점';
+}
+
+// 모의 맛집 데이터 생성
+function generateMockRestaurants(lat, lng) {
+  const types = ['한식', '중식', '일식', '양식', '카페', '분식', '치킨', '피자'];
+  const prefixes = ['맛있는', '행복한', '즐거운', '신나는', '감동의', '최고의', '인기', '유명한'];
+  const names = ['밥집', '식당', '레스토랑', '하우스', '키친', '테이블', '가든', '플레이스'];
+  
+  const restaurants = [];
+  
+  for (let i = 0; i < 10; i++) {
+    const type = types[Math.floor(Math.random() * types.length)];
+    const prefix = prefixes[Math.floor(Math.random() * prefixes.length)];
+    const name = names[Math.floor(Math.random() * names.length)];
+    const distance = Math.floor(Math.random() * 1400) + 100; // 100m ~ 1500m
+    
+    // 거리에 따라 좌표 계산 (대략적)
+    const latOffset = (Math.random() - 0.5) * 0.015;
+    const lngOffset = (Math.random() - 0.5) * 0.015;
+    
+    restaurants.push({
+      name: `${prefix}${type}${name}`,
+      category: getRestaurantCategory(type),
+      address: `근처 ${Math.floor(Math.random() * 300) + 1}번지`,
+      distance: distance,
+      phone: `010-${Math.floor(Math.random() * 9000) + 1000}-${Math.floor(Math.random() * 9000) + 1000}`,
+      lat: (lat + latOffset).toFixed(6),
+      lng: (lng + lngOffset).toFixed(6)
+    });
+  }
+  
+  return restaurants.sort((a, b) => a.distance - b.distance);
+}
+
 // 서버 시작
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 서버가 http://localhost:${PORT} 에서 실행 중입니다.`);
