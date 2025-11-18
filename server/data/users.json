@@ -1,0 +1,21 @@
+{
+  "users": [
+    {
+      "id": 0,
+      "username": "1234",
+      "password": "$2a$10$W7HZnmtBShjihJZ77M0kWuW8afkLK3vxcDIA3SkI.YW4DPCF6wqIK",
+      "nickname": "관리자",
+      "isAdmin": true,
+      "createdAt": "2025-11-16T17:22:54.327Z"
+    },
+    {
+      "id": 2,
+      "username": "12youm90-droid",
+      "nickname": "12youm90-droid",
+      "githubId": 244266469,
+      "githubLogin": "12youm90-droid",
+      "githubAvatar": "https://avatars.githubusercontent.com/u/244266469?v=4",
+      "createdAt": "2025-11-16T17:23:26.570Z"
+    }
+  ]
+}

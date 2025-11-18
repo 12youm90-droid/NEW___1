@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Redirecting…</title>
+  <meta http-equiv="refresh" content="0; url=/preview/index.html">
+  <script>
+    // JS fallback
+    (function(){
+      var target = '/preview/index.html';
+      if (location.hostname.endsWith('.github.dev')) {
+        // Codespaces public URL preserves path, so keep absolute path
+        window.location.replace(target);
+      } else if (location.hostname === '127.0.0.1' || location.hostname === 'localhost') {
+        window.location.replace(target);
+      } else {
+        // Generic fallback
+        window.location.replace(target);
+      }
+    })();
+  </script>
+</head>
+<body>
+  <p>이동 중… <a href="/preview/index.html">여기를 클릭</a>하세요.</p>
+</body>
+</html>

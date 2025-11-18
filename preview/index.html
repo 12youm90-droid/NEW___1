@@ -3,202 +3,2823 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>숨은 사진 스팟 - 미리보기</title>
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <title>숨은 사진 스팟 - 포토스팟 커뮤니티</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <style>
-    :root{--primary:#1976d2;--muted:#e3f2fd;--bg:#f5f7fb}
-    body{font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif; margin:0; background:var(--bg);-webkit-font-smoothing:antialiased}
-    header{background:var(--primary);color:white;padding:14px 16px}
-    .container{max-width:980px;margin:12px auto;padding:0 12px}
-    .nav{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0;align-items:center}
-    .nav button{padding:8px 12px;border:0;background:var(--muted);border-radius:8px;cursor:pointer}
-    .nav input{flex:1;min-width:140px}
-    .view{background:white;border-radius:12px;padding:12px;box-shadow:0 2px 8px rgba(0,0,0,0.06)}
-    .list .card{display:flex;gap:12px;padding:12px;border-bottom:1px solid #f0f0f0;align-items:center}
-    .card img{width:140px;height:90px;object-fit:cover;border-radius:8px}
-    .card h3{margin:0;font-size:16px}
-    .card p{margin:6px 0;color:#444}
-    .tags{color:var(--primary);font-size:13px}
-    .map-placeholder{height:360px;background-image:url('https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=1600');background-size:cover;background-position:center;border-radius:8px}
-    .detail img{width:100%;height:260px;object-fit:cover;border-radius:8px}
-    .chip{display:inline-block;background:#f2f6fb;padding:6px 10px;border-radius:18px;margin:6px 6px 0 0;font-size:13px;color:#111}
-    .btn{display:inline-block;padding:8px 12px;background:var(--primary);color:white;border-radius:8px;text-decoration:none}
-    footer{font-size:13px;color:#666;margin-top:12px}
-
-    /* Responsive */
-    @media (max-width:720px){
-      .container{margin:8px}
-      .card{flex-direction:row}
-      .card img{width:100px;height:72px}
-      .nav{gap:6px}
-      .nav button{padding:8px}
-      .view{padding:10px}
-      .map-placeholder{height:220px}
-      .detail img{height:220px}
-      .btn{padding:10px 14px;font-size:14px}
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --primary: #ff6b6b;
+      --secondary: #4ecdc4;
+      --accent: #ffe66d;
+      --dark: #2d3436;
+      --light: #f8f9fa;
+      --border: #e9ecef;
+      --shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans KR', sans-serif;
+      background: linear-gradient(135deg, #fffaf0 0%, #fff8e7 100%);
+      min-height: 100vh;
+      color: var(--dark);
     }
 
-    @media (max-width:420px){
-      .nav{flex-direction:column;align-items:stretch}
-      .nav input{width:100%;margin-top:6px}
-      .card{flex-direction:column;align-items:flex-start}
-      .card img{width:100%;height:160px;border-radius:8px}
-      .tags{display:block}
-      .map-placeholder{height:180px}
-      .detail img{height:180px}
-      .chip{font-size:12px;padding:6px 8px}
+    header {
+      background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%);
+      color: #5a4a3a;
+      padding: 20px;
+      box-shadow: var(--shadow);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    header h1 {
+      font-size: 28px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    header p {
+      opacity: 0.9;
+      font-size: 14px;
+    }
+
+    .header-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      font-size: 14px;
+    }
+
+    .user-info button {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s;
+    }
+
+    .btn-login {
+      background: white;
+      color: #5a4a3a;
+    }
+
+    .btn-logout {
+      background: #e74c3c;
+      color: white;
+    }
+
+    .btn-login:hover, .btn-logout:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 20px auto;
+      padding: 0 15px;
+    }
+
+    .nav-tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      background: white;
+      padding: 15px;
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+    }
+
+    .nav-tabs button {
+      padding: 12px 24px;
+      border: none;
+      background: var(--light);
+      color: var(--dark);
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      transition: all 0.3s;
+    }
+
+    .nav-tabs button:hover,
+    .nav-tabs button.active {
+      background: var(--primary);
+      color: white;
+      transform: translateY(-2px);
+    }
+
+    .search-bar {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      background: white;
+      padding: 15px;
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+    }
+
+    .search-bar input {
+      flex: 1;
+      padding: 12px 16px;
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      font-size: 14px;
+      transition: border-color 0.3s;
+    }
+
+    .search-bar input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.1);
+    }
+
+    .search-bar select {
+      padding: 12px 16px;
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      background: white;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .view {
+      display: none;
+      animation: fadeIn 0.3s ease-in;
+    }
+
+    .view.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .list-view {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 20px;
+    }
+
+    .spot-card {
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      transition: all 0.3s;
+      cursor: pointer;
+    }
+
+    .spot-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    }
+
+    .spot-card-image {
+      width: 100%;
+      height: 240px;
+      object-fit: contain;
+      background: #f8f9fa;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .spot-card-content {
+      padding: 16px;
+    }
+
+    .spot-card-title {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: var(--dark);
+    }
+
+    .spot-card-desc {
+      font-size: 13px;
+      color: #666;
+      margin-bottom: 12px;
+      line-height: 1.4;
+    }
+
+    .spot-card-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 12px;
+    }
+
+    .tag {
+      display: inline-block;
+      background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%);
+      color: #5a4a3a;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .spot-card-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+      font-size: 12px;
+      color: #999;
+    }
+
+    .spot-card-stats {
+      display: flex;
+      gap: 12px;
+    }
+
+    .detail-view {
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    .detail-header {
+      position: relative;
+      height: 300px;
+      overflow: hidden;
+    }
+
+    .detail-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .detail-back-btn {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      background: white;
+      border: none;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      box-shadow: var(--shadow);
+      z-index: 10;
+    }
+
+    .detail-back-btn:hover {
+      background: #f0f0f0;
+    }
+
+    .detail-body {
+      padding: 24px;
+    }
+
+    .detail-title {
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .detail-location {
+      color: var(--primary);
+      font-size: 13px;
+      margin-bottom: 12px;
+      display: none;
+    }
+
+    .detail-desc {
+      color: #666;
+      font-size: 14px;
+      line-height: 1.6;
+      margin-bottom: 16px;
+    }
+
+    .detail-actions {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .map-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.8);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .map-modal.active {
+      display: flex;
+    }
+
+    .map-modal-content {
+      background: white;
+      border-radius: 12px;
+      max-width: 800px;
+      max-height: 90vh;
+      overflow: auto;
+      position: relative;
+    }
+
+    .map-modal-close {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: white;
+      border: none;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 20px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+      z-index: 1;
+    }
+
+    .map-modal-close:hover {
+      background: #f0f0f0;
+    }
+
+    .map-modal img {
+      width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 12px;
+    }
+
+    /* 로그인/회원가입 모달 */
+    .auth-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      z-index: 2000;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .auth-modal.active {
+      display: flex;
+    }
+
+    .auth-modal-content {
+      background: white;
+      border-radius: 12px;
+      padding: 30px;
+      max-width: 400px;
+      width: 100%;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    }
+
+    .auth-modal h2 {
+      margin-bottom: 20px;
+      color: var(--dark);
+    }
+
+    .auth-form {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .auth-form input {
+      padding: 12px;
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      font-size: 14px;
+    }
+
+    .auth-form button {
+      padding: 12px;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .auth-form button:hover {
+      background: #ff5252;
+      transform: translateY(-2px);
+    }
+
+    .auth-form .cancel-btn {
+      background: #999;
+    }
+
+    .auth-form .cancel-btn:hover {
+      background: #777;
+    }
+
+    .auth-error {
+      color: #e74c3c;
+      font-size: 14px;
+      margin-top: -10px;
+      display: none;
+    }
+
+    .auth-error.active {
+      display: block;
+    }
+
+    .detail-btn {
+      padding: 10px 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.3s;
+    }
+
+    .detail-btn-primary {
+      background: var(--primary);
+      color: white;
+    }
+
+    .detail-btn-primary:hover {
+      background: #ff5252;
+      transform: scale(1.05);
+    }
+
+    .detail-btn-secondary {
+      background: var(--light);
+      color: var(--dark);
+      border: 2px solid var(--border);
+    }
+
+    .detail-btn-secondary:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    .detail-btn-danger {
+      background: #fff;
+      color: #f44336;
+      border: 2px solid #f44336;
+    }
+
+    .detail-btn-danger:hover {
+      background: #f44336;
+      color: white;
+    }
+
+    /* 사진 갤러리 스타일 */
+    .photo-gallery {
+      position: relative;
+      width: 100%;
+      height: 400px;
+      background: #f5f5f5;
+      border-radius: 12px;
+      overflow: hidden;
+      margin: 20px 0;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .gallery-container {
+      display: flex;
+      height: 100%;
+      transition: transform 0.3s ease-out;
+      touch-action: pan-y;
+    }
+
+    .gallery-slide {
+      min-width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #000;
+    }
+
+    .gallery-slide img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+
+    .gallery-nav {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(255,255,255,0.9);
+      border: none;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 20px;
+      color: #333;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+      transition: all 0.2s;
+    }
+
+    .gallery-nav:hover {
+      background: rgba(255,255,255,1);
+      transform: translateY(-50%) scale(1.1);
+    }
+
+    .gallery-nav.prev {
+      left: 10px;
+    }
+
+    .gallery-nav.next {
+      right: 10px;
+    }
+
+    .gallery-indicators {
+      position: absolute;
+      bottom: 15px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 8px;
+      z-index: 10;
+    }
+
+    .gallery-indicator {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.5);
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .gallery-indicator.active {
+      background: rgba(255,255,255,1);
+      width: 24px;
+      border-radius: 4px;
+    }
+
+    .gallery-counter {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      background: rgba(0,0,0,0.6);
+      color: white;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 14px;
+      z-index: 10;
+    }
+
+    .gallery-delete-btn {
+      position: absolute;
+      top: 15px;
+      left: 15px;
+      background: rgba(244, 67, 54, 0.9);
+      color: white;
+      border: none;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+      transition: all 0.2s;
+    }
+
+    .gallery-delete-btn:hover {
+      background: rgba(244, 67, 54, 1);
+      transform: scale(1.1);
+    }
+
+    .map-section {
+      margin-top: 24px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+    }
+
+    .map-section h3 {
+      margin-bottom: 12px;
+      font-size: 16px;
+    }
+
+    #detailMap {
+      width: 100%;
+      height: 400px;
+      border-radius: 8px;
+      overflow: hidden;
+      background: #f5f5f5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #detailMap img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      cursor: pointer;
+    }
+
+    .map-placeholder {
+      color: #999;
+      text-align: center;
+      padding: 20px;
+    }
+
+    .comments-section {
+      margin-top: 24px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+    }
+
+    .comments-section h3 {
+      margin-bottom: 16px;
+      font-size: 16px;
+    }
+
+    .comment-form {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .comment-form input {
+      flex: 1;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 13px;
+    }
+
+    .comment-form button {
+      padding: 10px 16px;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 12px;
+    }
+
+    .comment-form button:hover {
+      background: #ff5252;
+    }
+
+    .comment-item {
+      background: var(--light);
+      padding: 12px;
+      border-radius: 6px;
+      margin-bottom: 10px;
+    }
+
+    .comment-author {
+      font-weight: 600;
+      color: var(--dark);
+      font-size: 13px;
+    }
+
+    .comment-text {
+      font-size: 13px;
+      color: #666;
+      margin-top: 4px;
+    }
+
+    .comment-date {
+      font-size: 11px;
+      color: #999;
+      margin-top: 4px;
+    }
+
+    .comment-delete {
+      background: #ffebee;
+      color: var(--primary);
+      border: none;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      cursor: pointer;
+      margin-top: 6px;
+    }
+
+    .engagement-bar {
+      display: flex;
+      gap: 16px;
+      padding: 16px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .engagement-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: none;
+      border: none;
+      color: #666;
+      cursor: pointer;
+      font-size: 13px;
+      transition: all 0.3s;
+      padding: 8px 12px;
+      border-radius: 6px;
+    }
+
+    .engagement-btn:hover {
+      background: var(--light);
+      color: var(--primary);
+    }
+
+    .engagement-btn.liked {
+      color: var(--primary);
+      font-weight: 600;
+    }
+
+    .map-view {
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      height: 700px;
+    }
+
+    #mapContainer {
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+    }
+
+    .leaflet-popup-content {
+      margin: 8px;
+      min-width: 200px;
+    }
+
+    .popup-title {
+      font-weight: 700;
+      font-size: 16px;
+      margin-bottom: 8px;
+      color: var(--primary);
+    }
+
+    .popup-desc {
+      font-size: 13px;
+      color: #666;
+      margin-bottom: 8px;
+      line-height: 1.4;
+    }
+
+    .popup-tags {
+      display: flex;
+      gap: 4px;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
+    }
+
+    .popup-tag {
+      background: #f0f0f0;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 11px;
+      color: #666;
+    }
+
+    .popup-button {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      width: 100%;
+      margin-top: 4px;
+    }
+
+    .popup-button:hover {
+      opacity: 0.9;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: #999;
+    }
+
+    .empty-state-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+      opacity: 0.5;
+    }
+
+    @media (max-width: 768px) {
+      .list-view {
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      }
+
+      .detail-header {
+        height: 220px;
+      }
+
+      header h1 {
+        font-size: 22px;
+      }
+
+      .nav-tabs {
+        flex-direction: column;
+      }
+
+      .nav-tabs button {
+        width: 100%;
+      }
+
+      .detail-actions {
+        flex-direction: column;
+      }
+
+      .detail-btn {
+        justify-content: center;
+      }
+
+      #detailMap {
+        height: 250px;
+      }
+
+      #mapContainer {
+        height: 400px;
+      }
+
+      .search-bar {
+        flex-direction: column;
+      }
+
+      .search-bar input,
+      .search-bar select {
+        width: 100%;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .list-view {
+        grid-template-columns: 1fr;
+      }
+
+      header h1 {
+        font-size: 18px;
+      }
+
+      .detail-body {
+        padding: 16px;
+      }
+
+      .detail-title {
+        font-size: 20px;
+      }
+
+      .spot-card-image {
+        height: 150px;
+      }
     }
   </style>
 </head>
 <body>
   <header>
-    <strong>숨은 사진 스팟</strong>
-  </header>
-  <div class="container">
-    <div class="nav">
-        <button onclick="show('map')">지도</button>
-        <button onclick="show('list')">목록</button>
-        <button onclick="show('detail')">상세(예시)</button>
-        <input id="searchInput" placeholder="검색 또는 #태그 입력" style="margin-left:8px;padding:8px;border-radius:6px;border:1px solid #ddd;width:260px" oninput="onSearch(this.value)">
-    </div>
-
-    <div id="mapView" class="view map-view" style="display:none">
-      <div class="map-placeholder"></div>
-      <p style="margin-top:8px">현재 위치 기준 가까운 숨은 포토존을 지도에 표시합니다. (미리보기: 정적 이미지)</p>
-    </div>
-
-    <div id="listView" class="view list" style="display:none">
-      <div id="listContainer"></div>
-    </div>
-
-    <div id="detailView" class="view detail" style="display:none">
-      <img id="detailImage" src="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=1200" alt="detail">
-      <h2>숨은 언덕 전망대</h2>
-      <p>노을이 아름다운 조용한 전망대입니다. 광각 렌즈 추천, 골든아워(17:30-18:15)에 방문하세요.</p>
+    <div class="header-top">
       <div>
-        <span class="chip">광각 추천</span>
-        <span class="chip">골든아워</span>
-        <span class="chip">주차 가능</span>
+        <h1>📸 숨은 사진 스팟</h1>
       </div>
-      <div style="margin-top:12px">
-        <a class="btn" href="#" onclick="alert('지도에서 보기 (실제 앱에서는 지도 호출)')">지도에서 보기</a>
-        <a class="btn" href="#" style="background:#4caf50;margin-left:8px" onclick="document.getElementById('uploadInput').click()">사진 업로드</a>
-        <input id="uploadInput" type="file" accept="image/*" style="display:none" onchange="onFileSelected(event)">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <div class="user-info" id="userInfo">
+          <div style="display: flex; align-items: center; gap: 10px; font-size: 14px; color: #666;">
+            <span>⏳ 로그인 중...</span>
+          </div>
+        </div>
+        <button onclick="showAdminLoginModal()" style="padding: 8px 16px; background: #f39c12; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">👑 관리자</button>
       </div>
+    </div>
+    <p>전국의 숨은 포토스팟을 발견하고 공유하세요</p>
+  </header>
 
-      <hr style="margin-top:18px">
-      <h3>리뷰</h3>
-      <div id="reviewsList">
-        <div><strong>익명</strong> — 사람이 거의 없었어요. 안전하고 편안한 곳.</div>
-        <div><strong>사용자A</strong> — 골든아워에 가면 정말 예쁩니다!</div>
+  <div class="container">
+    <div class="nav-tabs">
+      <button id="tab-list" class="active" onclick="switchView('list', this)">📋 목록</button>
+      <button id="tab-map" onclick="switchView('map', this)">🗺️ 지도</button>
+      <button id="tab-favorite" onclick="switchView('favorite', this)">❤️ 좋아요</button>
+      <button id="tab-admin" onclick="switchView('admin', this)" style="margin-left: auto; background: #fff3cd; color: #856404;">📝 게시물 업로드</button>
+    </div>
+
+    <div id="listView" class="view active">
+      <div class="search-bar">
+        <input id="searchInput" type="text" placeholder="포토스팟 검색 (이름, 설명)...">
+        <select id="filterProvince">
+          <option value="">광역시/도 선택</option>
+          <option value="서울특별시">서울특별시</option>
+          <option value="부산광역시">부산광역시</option>
+          <option value="대구광역시">대구광역시</option>
+          <option value="인천광역시">인천광역시</option>
+          <option value="광주광역시">광주광역시</option>
+          <option value="대전광역시">대전광역시</option>
+          <option value="울산광역시">울산광역시</option>
+          <option value="세종특별자치시">세종특별자치시</option>
+          <option value="경기도">경기도</option>
+          <option value="강원특별자치도">강원특별자치도</option>
+          <option value="충청북도">충청북도</option>
+          <option value="충청남도">충청남도</option>
+          <option value="전북특별자치도">전북특별자치도</option>
+          <option value="전라남도">전라남도</option>
+          <option value="경상북도">경상북도</option>
+          <option value="경상남도">경상남도</option>
+          <option value="제주특별자치도">제주특별자치도</option>
+        </select>
+        <select id="filterCity">
+          <option value="">시/군/구 선택</option>
+        </select>
+      </div>
+      <div class="list-view" id="spotsGrid"></div>
+    </div>
+
+    <div id="detailView" class="view detail-view">
+      <div class="detail-header">
+        <img id="detailImage" class="detail-image" src="" alt="">
+        <button class="detail-back-btn" onclick="switchView('list', event)">← 목록</button>
+      </div>
+      <div class="detail-body">
+        <h2 class="detail-title" id="detailTitle"></h2>
+        <div class="detail-location" id="detailLocation"></div>
+        <p class="detail-desc" id="detailDesc"></p>
+        <div id="detailTags" style="margin-bottom: 16px;"></div>
+        
+        <div class="engagement-bar">
+          <button class="engagement-btn" id="likeBtn" onclick="toggleLike()">
+            <i class="fas fa-heart"></i> <span id="likeCount">0</span>
+          </button>
+          <button class="engagement-btn" onclick="document.querySelector('.comments-section').scrollIntoView({behavior: 'smooth'})">
+            <i class="fas fa-comment"></i> <span id="commentCount">0</span>
+          </button>
+          <button class="engagement-btn" onclick="shareSpot()">
+            <i class="fas fa-share"></i> 공유
+          </button>
+        </div>
+
+        <div class="detail-actions">
+          <button class="detail-btn detail-btn-secondary" onclick="document.querySelector('.comments-section').scrollIntoView({behavior: 'smooth'})">
+            <i class="fas fa-comment"></i> 댓글 (<span id="actionCommentCount">0</span>)
+          </button>
+          <button class="detail-btn detail-btn-primary" onclick="document.getElementById('uploadInput').click()">
+            <i class="fas fa-camera"></i> 사진 업로드
+          </button>
+          <input id="uploadInput" type="file" accept="image/*" multiple style="display:none" onchange="onFileSelected(event)">
+          <button class="detail-btn detail-btn-secondary" id="detailMapBtn" onclick="showMapImage()">
+            <i class="fas fa-map-marked-alt"></i> 위치
+          </button>
+          <button class="detail-btn detail-btn-secondary" onclick="openMapDirection()">
+            <i class="fas fa-directions"></i> 길찾기
+          </button>
+          <button class="detail-btn detail-btn-secondary" id="editSpotBtn" onclick="toggleEditMode()" style="display: none; margin-left: auto;">
+            <i class="fas fa-edit"></i> 수정
+          </button>
+          <button class="detail-btn detail-btn-danger" id="deleteSpotBtn" onclick="deleteCurrentSpotInline()" style="display: none;">
+            <i class="fas fa-trash-alt"></i> 삭제
+          </button>
+        </div>
+
+        <!-- 사진 갤러리 -->
+        <div id="photoGallery" class="photo-gallery" style="display: none;">
+          <div class="gallery-container" id="galleryContainer"></div>
+          <button class="gallery-nav prev" onclick="galleryPrev()" style="display: none;">
+            <i class="fas fa-chevron-left"></i>
+          </button>
+          <button class="gallery-nav next" onclick="galleryNext()" style="display: none;">
+            <i class="fas fa-chevron-right"></i>
+          </button>
+          <button class="gallery-delete-btn" onclick="deleteCurrentGalleryImage()" style="display: none;">
+            <i class="fas fa-trash-alt"></i>
+          </button>
+          <div class="gallery-indicators" id="galleryIndicators"></div>
+          <div class="gallery-counter" id="galleryCounter"></div>
+        </div>
+
+        <!-- 인라인 수정 폼 -->
+        <div id="inlineEditForm" style="display: none; background: #f9f9f9; padding: 20px; border-radius: 8px; margin: 20px 0; border: 2px solid #4caf50;">
+          <h3 style="margin-bottom: 15px; color: #4caf50;">✏️ 게시물 수정</h3>
+          <div style="display: grid; gap: 15px;">
+            <div>
+              <label style="display: block; margin-bottom: 5px; font-weight: 600;">포토스팟 이름</label>
+              <input id="inlineEditName" type="text" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+              <div>
+                <label style="display: block; margin-bottom: 5px; font-weight: 600;">광역시/도</label>
+                <select id="inlineEditProvince" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+                  <option value="">선택</option>
+                  <option value="서울특별시">서울특별시</option>
+                  <option value="부산광역시">부산광역시</option>
+                  <option value="대구광역시">대구광역시</option>
+                  <option value="인천광역시">인천광역시</option>
+                  <option value="광주광역시">광주광역시</option>
+                  <option value="대전광역시">대전광역시</option>
+                  <option value="울산광역시">울산광역시</option>
+                  <option value="세종특별자치시">세종특별자치시</option>
+                  <option value="경기도">경기도</option>
+                  <option value="강원특별자치도">강원특별자치도</option>
+                  <option value="충청북도">충청북도</option>
+                  <option value="충청남도">충청남도</option>
+                  <option value="전북특별자치도">전북특별자치도</option>
+                  <option value="전라남도">전라남도</option>
+                  <option value="경상북도">경상북도</option>
+                  <option value="경상남도">경상남도</option>
+                  <option value="제주특별자치도">제주특별자치도</option>
+                </select>
+              </div>
+              <div>
+                <label style="display: block; margin-bottom: 5px; font-weight: 600;">시/군/구</label>
+                <select id="inlineEditCity" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+                  <option value="">선택</option>
+                </select>
+              </div>
+            </div>
+            <div>
+              <label style="display: block; margin-bottom: 5px; font-weight: 600;">세부주소</label>
+              <input id="inlineEditDetailAddress" type="text" placeholder="예: 읍/면/동, 123-45번지" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+            </div>
+            <div>
+              <label style="display: block; margin-bottom: 5px; font-weight: 600;">설명</label>
+              <textarea id="inlineEditDesc" rows="3" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;"></textarea>
+            </div>
+            <div>
+              <label style="display: block; margin-bottom: 5px; font-weight: 600;">태그 (쉼표로 구분)</label>
+              <input id="inlineEditTags" type="text" placeholder="#태그1,#태그2" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+            </div>
+            <div>
+              <label style="display: block; margin-bottom: 5px; font-weight: 600;">이미지 URL</label>
+              <input id="inlineEditImg" type="text" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+            </div>
+            <div style="display: flex; gap: 10px;">
+              <button onclick="saveInlineEdit()" style="flex: 1; padding: 12px; background: #4caf50; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">✅ 저장</button>
+              <button onclick="cancelInlineEdit()" style="flex: 1; padding: 12px; background: #999; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">취소</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="comments-section">
+          <h3>💬 댓글 (<span id="totalComments">0</span>)</h3>
+          <div class="comment-form">
+            <input id="commentInput" type="text" placeholder="댓글을 작성해보세요...">
+            <button onclick="addComment()">댓글 쓰기</button>
+          </div>
+          <div id="commentsList"></div>
+        </div>
       </div>
     </div>
 
-    <footer>
-      이 페이지는 코드에서 생성된 프로토타입 미리보기입니다. 실제 앱은 Flutter로 빌드되어 모바일/데스크탑/웹에서 동작합니다.
-    </footer>
+    <div id="mapView" class="view">
+      <div style="padding: 15px; background: white; border-radius: 8px; margin-bottom: 10px; text-align: center;">
+        <h3 style="margin: 0; color: #666;">🗺️ 전체 포토스팟 지도</h3>
+      </div>
+      <div class="map-view">
+        <div id="mapContainer"></div>
+      </div>
+    </div>
+
+    <div id="favoriteView" class="view">
+      <div class="list-view" id="favoriteGrid"></div>
+    </div>
+
+    <div id="mapModal" class="map-modal" onclick="closeMapModal(event)">
+      <div class="map-modal-content" onclick="event.stopPropagation()">
+        <button class="map-modal-close" onclick="closeMapModal()">×</button>
+        <img id="mapModalImage" src="" alt="위치 지도">
+      </div>
+    </div>
+
+    <!-- 로그인 모달 -->
+    <div id="loginModal" class="auth-modal">
+      <div class="auth-modal-content">
+        <h2>🔐 로그인</h2>
+        <div class="auth-error" id="loginError"></div>
+        <form class="auth-form" onsubmit="handleLogin(event)">
+          <input type="text" id="loginUsername" placeholder="사용자명" required>
+          <input type="password" id="loginPassword" placeholder="비밀번호" required>
+          <button type="submit">로그인</button>
+          <button type="button" class="cancel-btn" onclick="closeLoginModal()">취소</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- 회원가입 모달 -->
+    <div id="registerModal" class="auth-modal">
+      <div class="auth-modal-content">
+        <h2>✨ 회원가입</h2>
+        <div class="auth-error" id="registerError"></div>
+        <form class="auth-form" onsubmit="handleRegister(event)">
+          <input type="text" id="registerUsername" placeholder="사용자명 (4자 이상)" required minlength="4">
+          <input type="text" id="registerNickname" placeholder="닉네임" required>
+          <input type="password" id="registerPassword" placeholder="비밀번호 (4자 이상)" required minlength="4">
+          <button type="submit">가입하기</button>
+          <button type="button" class="cancel-btn" onclick="closeRegisterModal()">취소</button>
+        </form>
+      </div>
+    </div>
+
+    <div id="adminView" class="view" style="background: white; border-radius: 12px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+      <h2 style="margin-bottom: 20px;">📝 게시물 업로드</h2>
+      <div style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
+        <button onclick="addNewSpot()" style="padding: 10px 16px; background: #4caf50; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">➕ 새 포토스팟 추가</button>
+      </div>
+      <div id="adminForm" style="display: none; background: #f9f9f9; padding: 20px; border-radius: 8px; border: 1px solid #ddd;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+          <div style="grid-column: 1 / -1; display:flex; gap:8px; align-items:center;">
+            <input id="placeQuery" type="text" placeholder="네이버에서 장소/주소 검색" style="flex:1; padding:10px; border:1px solid #ddd; border-radius:6px;">
+            <button onclick="searchNaverPlace()" style="padding: 10px 16px; background: #10b981; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">🔎 장소 검색</button>
+          </div>
+          <div id="placeResults" style="grid-column: 1 / -1; display:none; background:#fff; border:1px solid #ddd; border-radius:6px; max-height:200px; overflow:auto;"></div>
+          <div style="grid-column: 1 / -1;">
+            <label style="display: block; margin-bottom: 5px; font-weight: 600;">포토스팟 이름</label>
+            <input id="editName" type="text" placeholder="예: 남산 팔각정 포토존" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+          </div>
+          <div>
+            <label style="display: block; margin-bottom: 5px; font-weight: 600;">대분류 (특별시/광역시/도)</label>
+            <select id="editProvince" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+              <option value="">선택</option>
+              <option value="서울특별시">서울특별시</option>
+              <option value="부산광역시">부산광역시</option>
+              <option value="대구광역시">대구광역시</option>
+              <option value="인천광역시">인천광역시</option>
+              <option value="광주광역시">광주광역시</option>
+              <option value="대전광역시">대전광역시</option>
+              <option value="울산광역시">울산광역시</option>
+              <option value="세종특별자치시">세종특별자치시</option>
+              <option value="경기도">경기도</option>
+              <option value="강원특별자치도">강원특별자치도</option>
+              <option value="충청북도">충청북도</option>
+              <option value="충청남도">충청남도</option>
+              <option value="전북특별자치도">전북특별자치도</option>
+              <option value="전라남도">전라남도</option>
+              <option value="경상북도">경상북도</option>
+              <option value="경상남도">경상남도</option>
+              <option value="제주특별자치도">제주특별자치도</option>
+            </select>
+          </div>
+          <div>
+            <label style="display: block; margin-bottom: 5px; font-weight: 600;">중분류 (시/군/구)</label>
+            <select id="editCity" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+              <option value="">선택</option>
+            </select>
+          </div>
+          <div>
+            <label style="display: block; margin-bottom: 5px; font-weight: 600;">세부주소</label>
+            <input id="editDetailAddress" type="text" placeholder="예: 읍/면/동, 123-45번지" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+          </div>
+          <div>
+            <label style="display: block; margin-bottom: 5px; font-weight: 600;">설명</label>
+            <input id="editDesc" type="text" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+          </div>
+
+          <div>
+            <label style="display: block; margin-bottom: 5px; font-weight: 600;">태그 (쉼표로 구분)</label>
+            <input id="editTags" type="text" placeholder="#태그1,#태그2" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+          </div>
+          <div>
+            <label style="display: block; margin-bottom: 5px; font-weight: 600;">이미지 URL</label>
+            <input id="editImg" type="text" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+          </div>
+        </div>
+        <div style="display: flex; gap: 10px;">
+          <button onclick="saveEditData()" style="padding: 10px 16px; background: #4caf50; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">✅ 저장</button>
+          <button onclick="deleteSpot()" style="padding: 10px 16px; background: #f44336; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">🗑️ 삭제</button>
+          <button onclick="cancelEdit()" style="padding: 10px 16px; background: #999; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">취소</button>
+        </div>
+      </div>
+    </div>
   </div>
 
+  <!-- 관리자 로그인 모달 -->
+  <div id="adminLoginModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+    <div style="background: white; padding: 30px; border-radius: 12px; max-width: 400px; width: 90%;">
+      <h2 style="margin-bottom: 20px; color: #f39c12;">👑 관리자 로그인</h2>
+      <input id="adminUsername" type="text" placeholder="관리자 ID" style="width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">
+      <input id="adminPassword" type="password" placeholder="비밀번호" style="width: 100%; padding: 12px; margin-bottom: 20px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">
+      <div style="display: flex; gap: 10px;">
+        <button onclick="adminLogin()" style="flex: 1; padding: 12px; background: #f39c12; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">로그인</button>
+        <button onclick="closeAdminLoginModal()" style="flex: 1; padding: 12px; background: #95a5a6; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">취소</button>
+      </div>
+    </div>
+  </div>
+  
   <script>
-    // Data model for preview
-    const spots = [
-      {
-        id: 's1',
-        name: '숨은 언덕 전망대',
-        desc: '작은 언덕 위의 감성 전망대. 노을이 예쁜 곳.',
-        tags: ['#노을','#언덕','#야경'],
-        img: 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=1200'
-      },
-      {
-        id: 's2',
-        name: '낡은 카페 골목',
-        desc: '빈티지 감성의 골목 카페들, 포토스팟이 곳곳에 있음.',
-        tags: ['#감성카페','#빈티지','#골목'],
-        img: 'https://images.unsplash.com/photo-1493666438817-866a91353ca9?w=1200'
-      },
-      {
-        id: 's3',
-        name: '한적한 강변 산책로',
-        desc: '사람이 적고 강변 뷰가 좋은 포인트.',
-        tags: ['#자연','#산책로','#강변'],
-        img: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=1200'
-      }
+
+    // ============ 대한민국 행정구역 데이터 ============
+    const koreanRegions = {
+      '서울특별시': ['종로구', '중구', '용산구', '성동구', '광진구', '동대문구', '중랑구', '성북구', '강북구', '도봉구', '노원구', '은평구', '서대문구', '마포구', '양천구', '강서구', '구로구', '금천구', '영등포구', '동작구', '관악구', '서초구', '강남구', '송파구', '강동구'],
+      '부산광역시': ['중구', '서구', '동구', '영도구', '부산진구', '동래구', '남구', '북구', '해운대구', '사하구', '금정구', '강서구', '연제구', '수영구', '사상구', '기장군'],
+      '대구광역시': ['중구', '동구', '서구', '남구', '북구', '수성구', '달서구', '달성군', '군위군'],
+      '인천광역시': ['중구', '동구', '미추홀구', '연수구', '남동구', '부평구', '계양구', '서구', '강화군', '옹진군'],
+      '광주광역시': ['동구', '서구', '남구', '북구', '광산구'],
+      '대전광역시': ['동구', '중구', '서구', '유성구', '대덕구'],
+      '울산광역시': ['중구', '남구', '동구', '북구', '울주군'],
+      '세종특별자치시': ['세종시'],
+      '경기도': ['수원시', '성남시', '고양시', '용인시', '부천시', '안산시', '안양시', '남양주시', '화성시', '평택시', '의정부시', '시흥시', '파주시', '광명시', '김포시', '군포시', '광주시', '이천시', '양주시', '오산시', '구리시', '안성시', '포천시', '의왕시', '하남시', '여주시', '양평군', '동두천시', '과천시', '가평군', '연천군'],
+      '강원특별자치도': ['춘천시', '원주시', '강릉시', '동해시', '태백시', '속초시', '삼척시', '홍천군', '횡성군', '영월군', '평창군', '정선군', '철원군', '화천군', '양구군', '인제군', '고성군', '양양군'],
+      '충청북도': ['청주시', '충주시', '제천시', '보은군', '옥천군', '영동군', '증평군', '진천군', '괴산군', '음성군', '단양군'],
+      '충청남도': ['천안시', '공주시', '보령시', '아산시', '서산시', '논산시', '계룡시', '당진시', '금산군', '부여군', '서천군', '청양군', '홍성군', '예산군', '태안군'],
+      '전북특별자치도': ['전주시', '군산시', '익산시', '정읍시', '남원시', '김제시', '완주군', '진안군', '무주군', '장수군', '임실군', '순창군', '고창군', '부안군'],
+      '전라남도': ['목포시', '여수시', '순천시', '나주시', '광양시', '담양군', '곡성군', '구례군', '고흥군', '보성군', '화순군', '장흥군', '강진군', '해남군', '영암군', '무안군', '함평군', '영광군', '장성군', '완도군', '진도군', '신안군'],
+      '경상북도': ['포항시', '경주시', '김천시', '안동시', '구미시', '영주시', '영천시', '상주시', '문경시', '경산시', '의성군', '청송군', '영양군', '영덕군', '청도군', '고령군', '성주군', '칠곡군', '예천군', '봉화군', '울진군', '울릉군'],
+      '경상남도': ['창원시', '진주시', '통영시', '사천시', '김해시', '밀양시', '거제시', '양산시', '의령군', '함안군', '창녕군', '고성군', '남해군', '하동군', '산청군', '함양군', '거창군', '합천군'],
+      '제주특별자치도': ['제주시', '서귀포시']
+    };
+
+    // ============ DATA with CORRECT COORDINATES ============
+    const spotsData = [
+      { id: 's1', name: '남산 팔각정 포토존', province: '서울특별시', city: '중구', district: '남산동', detailAddress: '남산 팔각정', desc: '서울 야경을 배경으로 한 감성 포토스팟. 밤 시간이 특히 아름답습니다.', tags: ['#야경','#사계절','#팔각정'], lat: 37.5505, lng: 126.9877, img: 'https://search.pstatic.net/common/?src=http%3A%2F%2Fblogfiles.naver.net%2FMjAyNTEwMTVfMTU1%2FMDAxNzYwNTEzNTQ2NDI5.BAHVHl81uwJjXxyFrCMosrS_rWNf5H-0vW2nFsPaGYIg.6W5EAt0buel1jupOmRrB_JCekcQMWVwgFgWnaOMP4-Qg.JPEG%2FSE-152F2045-F137-427F-BBFB-CAC036C0FCBB.jpg&type=sc960_832', likes: 245 },
+      { id: 's2', name: '북촌 한옥마을 포토스팟', province: '서울특별시', city: '종로구', district: '가회동', detailAddress: '북촌로 일대', desc: '전통 한옥과 현대 감성이 어우러진 포토존. 한복 대여소도 많음.', tags: ['#한옥','#전통','#감성'], lat: 37.5801, lng: 126.9777, img: 'https://search.pstatic.net/common/?src=http%3A%2F%2Fblogfiles.naver.net%2FMjAyMjA2MDRfMjQy%2FMDAxNjU0MzE0NDU1NDE5.xshpiNkFoUEY4AfKN-8ScTX8khyWA_qo2w0sa5GKwPYg.LTDjZvjZB9qryr6A-80A4zphEyQz-b8e0O0IYD2QYlgg.JPEG.1127qaz%2FIMG_5136.jpg&type=sc960_832', likes: 189 },
+      { id: 's3', name: '경복궁 야경 포토존', province: '서울특별시', city: '종로구', district: '세종로', detailAddress: '경복궁 정문', desc: '밤에 조명이 들어오는 경복궁. 한국 전통미를 담을 수 있는 최고의 장소.', tags: ['#야경','#궁궐','#야경'], lat: 37.5949, lng: 126.9776, img: 'https://search.pstatic.net/common/?src=http%3A%2F%2Fblogfiles.naver.net%2FMjAyNTA2MDJfNDYg%2FMDAxNzQ4ODU1ODQ5ODU3.5HpMfI0tcb8XlxN3skYCd_TRKiz3U7bF-KIXxbMOWX8g.yo0QJxSLIpUiMpibReFk6qOKJCstg0tjfp-6Wy44XEgg.JPEG%2F20250528%25A3%25DF202517.jpg&type=sc960_832', likes: 312 },
+      { id: 's4', name: '감천문화마을', province: '부산광역시', city: '사하구', district: '감천동', detailAddress: '감내2로', desc: '알록달록한 집들이 산 언덕에 펼쳐진 포토존. 부산의 숨은 보석.', tags: ['#색감','#마을','#부산'], lat: 35.0977, lng: 129.0653, img: 'https://search.pstatic.net/common/?src=http%3A%2F%2Fblogfiles.naver.net%2FMjAyMTEyMDdfNDQg%2FMDAxNjM4ODcwNjc5ODc5.BUSzOCm0IMAmJ4EVbLGX4QCMvwBqgYJdD4d7j9yqGwgg.tI9BbmRRNi9qLBTAjzoMzmoSCOkAqD7I5qmcYKzAs5Yg.GIF.wiz_js%2F20211206%25A3%25DF181451%25A3%25A80%25A3%25A9.gif&type=sc960_832_gif', likes: 267 },
+      { id: 's5', name: '전주 한옥마을', province: '전북특별자치도', city: '전주시', district: '완산구 풍남동', detailAddress: '어진길 일대', desc: '전통 한옥이 가득한 마을의 야경. 정감 있는 느낌의 사진을 담을 수 있음.', tags: ['#한옥','#야경','#전주'], lat: 35.8242, lng: 127.1410, img: 'https://search.pstatic.net/common/?src=http%3A%2F%2Fblogfiles.naver.net%2FMjAyNDA3MDNfMjI2%2FMDAxNzE5OTM3NjYwMjA2.61Fy6edtTMgdwU44_nmw5RXNfMjxrsXJKMyuRxinGHog.g5NuJeAC4w6JXFle1GA66vbTDH5t1fzshY8xWwwgttgg.JPEG%2F1_%25A1%25DA%25B8%25DE%25C0%25CE%25BB%25E7%25C1%25F8%25A1%25DA.jpg&type=sc960_832', likes: 198 },
+      { id: 's6', name: '자작나무 숲', province: '강원특별자치도', city: '인제군', district: '원대리', detailAddress: '자작나무숲길', desc: '푸른 자연 속 한적한 숲길. 산림욕과 사진촬영을 동시에 즐길 수 있는 곳.', tags: ['#자연','#산','#숲'], lat: 37.8917, lng: 128.2019, img: 'https://search.pstatic.net/common/?src=http%3A%2F%2Fblogfiles.naver.net%2FMjAxNzEwMDlfMTAx%2FMDAxNTA3NDc4MTY4OTMw.4RV0ECR2aFiOOCgyc3rE2EvwtdAdr2-sj742DmOV7q8g.ppkMFdzG9AcYanFxQuWVyCd7tGBydrSpEqc6BDYYx-Yg.JPEG.durden09%2F207.JPG&type=sc960_832', likes: 156 },
+      { id: 's7', name: '해운대 해변 일몰 포인트', province: '부산광역시', city: '해운대구', district: '우동', detailAddress: '해운대해변로', desc: '부산 해운대의 아름다운 일몰 포인트. 저녁 시간 방문 권장.', tags: ['#일몰','#해변','#부산'], lat: 35.1607, lng: 129.1608, img: 'https://search.pstatic.net/common/?src=http%3A%2F%2Fblogfiles.naver.net%2FMjAxNzAyMTNfMjQy%2FMDAxNDg2OTE0Njc5MzEy.uk3ZIeKHhdgCI2NbN-OIBpcmAR3-vWZkedIDE6VbHUMg.bRoYu0X0pbHFlYPZlme-Ub2xTRDZTRLrz9qW0bzB3ygg.PNG.pjhadan%2F%25B9%25CC%25C6%25F75-1.png&type=sc960_832', likes: 284 },
+      { id: 's8', name: '아침고요수목원', province: '경기도', city: '가평군', district: '상면', detailAddress: '수목원로 432', desc: '계절마다 다양한 식물과 꽃을 볼 수 있는 포토존. 봄과 가을이 최고.', tags: ['#식물','#정원','#계절'], lat: 37.3192, lng: 127.2125, img: 'https://search.pstatic.net/common/?src=http%3A%2F%2Fblogfiles.naver.net%2FMjAyNDA1MjRfMjU1%2FMDAxNzE2NTE0ODAwMzQ3.QGzqUHdJ7PouX56ckLhkOAaZxRoCJ_McuiX2ahjq0tAg.f7GQf38Sc2wXt3vRkE2oqzhPWSzkQjIv-KdpghCi33wg.JPEG%2FIMG_6938.jpg&type=sc960_832', likes: 167 },
+      { id: 's9', name: '덕수궁 석조전', province: '서울특별시', city: '중구', district: '정동', detailAddress: '덕수궁길 61', desc: '신고딕 양식의 아름다운 건축물. 클래식한 사진을 찍을 수 있는 곳.', tags: ['#건축','#클래식','#궁궐'], lat: 37.5648, lng: 126.9629, img: 'https://search.pstatic.net/common/?src=http%3A%2F%2Fblogfiles.naver.net%2FMjAyNTA4MDNfMjI4%2FMDAxNzU0MjAyMTg5NzY2.Oy7fzpdqj8Fw76LUWjSqniSGHW7hJbLMit0szzpXfkog.pn3LfMjnJFKFOBkarekeVwqBZbzkcY68_ks7YfmnhPgg.JPEG%2FIMG%25A3%25DF0076.JPG&type=sc960_832', likes: 223 },
+      { id: 's10', name: '정동진 해변', province: '강원특별자치도', city: '강릉시', district: '강동면', detailAddress: '정동진리', desc: '영동선 기차를 배경으로 한 독특한 포토존. 기차 애호가들이 찾는 곳.', tags: ['#해변','#기차','#강릉'], lat: 37.3294, lng: 129.0123, img: 'https://search.pstatic.net/common/?src=http%3A%2F%2Fblogfiles.naver.net%2FMjAyNDAzMDdfNCAg%2FMDAxNzA5NzQ4NjczNDQy._Mvck3VSFVl6xXBvgdCyfTpqpXn_V6YOeKsIKprVwY8g.vvLS_-nPYun4hGgxPHDEkDTSQX2hvUCGfXVP90Iwz7Ig.PNG%2Fimage.png&type=sc960_832', likes: 198 },
+      { id: 's11', name: '검은모래해변', province: '제주특별자치도', city: '제주시', district: '구좌읍', detailAddress: '하도리', desc: '검은 모래가 특징인 해변. 독특한 색감의 사진을 담을 수 있습니다.', tags: ['#해변','#제주','#검은모래'], lat: 33.3117, lng: 126.4113, img: 'https://search.pstatic.net/common/?src=http%3A%2F%2Fblogfiles.naver.net%2FMjAyNTAzMDVfMTk3%2FMDAxNzQxMTQ5MjAxOTEz.k4T-SoKL5UVacHeGawOTHKiqBfwflsdb6eqp8p11kv8g.iXZ0Zr2LmJoXM5P3xJXOfStOxMuAtJQbTNIb5cITBQUg.JPEG%2FIMG_5082%25281%2529.jpg&type=sc960_832', likes: 276 },
+      { id: 's12', name: '명동 성당 거리', province: '서울특별시', city: '중구', district: '명동', detailAddress: '명동거리 일대', desc: '밤거리 조명과 쇼윈도우가 어우러진 도시 야경의 정수.', tags: ['#야경','#도시','#거리'], lat: 37.5631, lng: 126.9824, img: 'https://search.pstatic.net/common/?src=http%3A%2F%2Fblogfiles.naver.net%2FMjAyMjEyMjVfMTkx%2FMDAxNjcxOTUxNDA2MDQ0.GJmAXJuvEjuB7XU3pd25yigvaSfmWBQ7LmaVPnMgPLwg.NlAm1ybinguO5x_MLgg2151xvdwq42iBMBteJfO9Vjgg.JPEG.bluerose0328%2FDSC04777-16.jpg&type=sc960_832', likes: 241 },
+      { id: 's13', name: '서촌 골목길', province: '서울특별시', city: '종로구', district: '통의동', detailAddress: '필운대로 일대', desc: '카페와 갤러리가 가듍한 예술가 감성의 거리. 사진작가들이 자주 찾음.', tags: ['#골목','#한옥','#감성'], lat: 37.5769, lng: 126.9647, img: 'https://search.pstatic.net/common/?src=http%3A%2F%2Fblogfiles.naver.net%2FMjAyMTEyMDJfMjkg%2FMDAxNjM4NDQ3ODMwODUy.oF9JuNCf7a4VnqBlr3r048NQeBrunuYdMu9ijOMS55Mg.4Z5YhIWkxa5thzYX1mUDj3t19MCJCQIsVUsYpfujcaAg.JPEG.yhw5031%2FIMG_0066.jpg&type=sc960_832', likes: 189 },
+      { id: 's14', name: '해상케이블카', province: '전라남도', city: '여수시', district: '돌산읍', detailAddress: '돌산공원 일대', desc: '바다 위를 지나가는 케이블카. 스릴있는 사진을 원한다면 이곳!', tags: ['#바다','#전망','#여수'], lat: 34.7604, lng: 127.7370, img: 'https://search.pstatic.net/common/?src=http%3A%2F%2Fblogfiles.naver.net%2FMjAyNDExMTJfOTIg%2FMDAxNzMxNDA3MDA4ODEw.NeWqHDZPhCTe7c0bRes_eeObonprMXpZ_CUDePMvbo0g.ej-mIcOHtK_m9Olhq_ttW3KzlTPACuyKq3XiN570ONAg.JPEG%2F1731407005901.jpg&type=sc960_832', likes: 205 },
+      { id: 's15', name: '대나무숲길', province: '전라남도', city: '담양군', district: '담양읍', detailAddress: '메타세콰이아길 119', desc: '대나무가 우거진 숲길. 신비로운 분위기의 사진을 담을 수 있습니다.', tags: ['#숲','#대나무','#담양'], lat: 35.2981, lng: 126.9919, img: 'https://search.pstatic.net/common/?src=http%3A%2F%2Fblogfiles.naver.net%2FMjAyMzA0MzBfMjEy%2FMDAxNjgyODU2NjYyNDYw.XKOh12ugcd53H4gLFhZeLj09SaUXa7qhZuQo6s5j4P8g.nK94vCQVET9fLwP_bnUz3M_wtduv6Goxb_alMH3z04kg.JPEG.pure_quf%2FP20230430_195550000_502A54B1-B4E6-4EFA-B940-434CCD057993.jpg&type=sc960_832', likes: 234 },
+      { id: 's16', name: '서울숲', province: '서울특별시', city: '성동구', district: '성수동', detailAddress: '뚤섫로 273', desc: '도시 속 자연 휴식처. 매 계절 아름다운 풍경을 만날 수 있습니다.', tags: ['#자연','#공원','#서울'], lat: 37.5447, lng: 127.0390, img: 'https://search.pstatic.net/common/?src=http%3A%2F%2Fblogfiles.naver.net%2FMjAyMzA1MjFfMTEw%2FMDAxNjg0NjY5MDczNTY4.G44LCcXRuHcaq-UjeRlX-a3zuLKgj4EXRmHP7wBHccwg.gDX_fpE7lU_-lGR5x8hI9ep0CO6OCNxUXkErXGBIgFcg.JPEG.gkswldnjs22%2F20230521%25A3%25DF152820.jpg&type=sc960_832', likes: 201 },
+      { id: 's17', name: '여의도 벚꽃길', province: '서울특별시', city: '영등포구', district: '여의도동', detailAddress: '여의서로', desc: '봄에는 벚꽃이 만발하는 최고의 포토존. 밤에는 야경도 아름답습니다.', tags: ['#벚꽃','#봄','#야경'], lat: 37.5263, lng: 126.9260, img: 'https://search.pstatic.net/common/?src=http%3A%2F%2Fblogfiles.naver.net%2FMjAyNDA0MDJfMiAg%2FMDAxNzEyMDI0OTk1NTI5.RY88yN1NhPwRRezcnIr8yuRZF5XGSI-8LYpEO9vxO3cg.tR47RGvJXCaDn82zKv8oJgl8rPYwGLWILD-Cc_6Q3igg.JPEG%2F20240402%25A3%25DF112824.jpg&type=sc960_832', likes: 289 },
+      { id: 's18', name: '홍대 벽화골목', province: '서울특별시', city: '마포구', district: '서교동', detailAddress: '와우산로 일대', desc: '예술과 감성이 흘러넘치는 골목. 매번 새로운 벽화를 발견할 수 있습니다.', tags: ['#미술','#감성','#홍대'], lat: 37.5567, lng: 126.9230, img: 'https://search.pstatic.net/common/?src=http%3A%2F%2Fblogfiles.naver.net%2F20150716_102%2Fqhadldhaus98_1437054710979z4lpf_JPEG%2FIMG_7201.JPG&type=sc960_832', likes: 267 },
+      { id: 's19', name: '독일마을', province: '경상남도', city: '남해군', district: '삼동면', detailAddress: '물건리', desc: '이국적인 분위기의 건축물들. 마치 유럽에 온 것 같은 느낌입니다.', tags: ['#건축','#이국적','#남해'], lat: 34.8589, lng: 128.0754, img: 'https://search.pstatic.net/common/?src=http%3A%2F%2Fimgnews.naver.net%2Fimage%2F005%2F2024%2F09%2F04%2F2024090413441674796_1725425057_0020491127_20240904134709416.jpg&type=sc960_832', likes: 215 },
+      { id: 's20', name: '죽도해변 동굴', province: '경상북도', city: '포항시', district: '북구 두호동', detailAddress: '통일로 406', desc: '평온한 해변과 등대의 조합. 일출 촬영의 명소입니다.', tags: ['#해변','#일출','#포항'], lat: 36.0329, lng: 129.3708, img: 'https://search.pstatic.net/common/?src=http%3A%2F%2Fblogfiles.naver.net%2FMjAyMzA3MTlfMTUx%2FMDAxNjg5NzY3ODcyMjYw.93QEWv7PzcUxNCFIRQ7y214UVL9Zz9UzwM-mu6O5-LUg.mSqzY9l7k9JBBqYJLtvFCJ0dnx3Yt8nJhw4cebwzZMcg.JPEG.sunhye2430%2FIMG_6088.JPG&type=sc960_832', likes: 172 },
+      { id: 's21', name: '불국사', province: '경상북도', city: '경주시', district: '진현동', detailAddress: '불국로 385', desc: '역사와 문화가 담긴 사찰. 사계절 모두 아름다운 포토존입니다.', tags: ['#사찰','#역사','#경주'], lat: 35.7894, lng: 129.2183, img: 'https://search.pstatic.net/common/?src=http%3A%2F%2Fblogfiles.naver.net%2FMjAyNDExMjVfMjcw%2FMDAxNzMyNTMyNTk0NzMy.lOyBH0hZGutIrVG9yGth0ptAo1YglRGXj_gVNxvODGcg.kcRK1oFg5NgfQ2g34irBtHu5ROd2OuGmECGakOUNWDog.JPEG%2FDHK_6874.jpg&type=sc960_832', likes: 243 },
+      { id: 's22', name: '동피랑 벽화마을', province: '경상남도', city: '통영시', district: '동호동', detailAddress: '동피랑길', desc: '항구도시의 감성을 담은 벽화마을. 하늘색 바다가 인생샷 배경입니다.', tags: ['#벽화','#바다','#통영'], lat: 34.9227, lng: 128.5628, img: 'https://search.pstatic.net/common/?src=http%3A%2F%2Fblogfiles.naver.net%2FMjAyNDA4MDVfMTk3%2FMDAxNzIyODMwMDI0ODU3.c08xWhePlQbklyCKRELmzJDl3OLGQO6jZfSVRCvoQWUg.b3BQEWIIXxku5DcBI3eJWF7snelYtkC5zBu2MlMG8A4g.JPEG%2Foutput_3979949709.jpg&type=sc960_832', likes: 291 },
+      { id: 's23', name: '내장산', province: '전북특별자치도', city: '정읍시', district: '내장동', detailAddress: '내장산로', desc: '가을 단풍의 절정. 등산 후 포토존을 다양하게 찾을 수 있습니다.', tags: ['#단풍','#산','#가을'], lat: 35.6819, lng: 127.2089, img: 'https://search.pstatic.net/common/?src=http%3A%2F%2Fblogfiles.naver.net%2FMjAyNTExMDlfMTYw%2FMDAxNzYyNjU1MTE2ODI0.64pN8WPn00VTxZAWevMhM5AX8zpj2rC1cyrpBZJTfocg.MGKW_i3mXEOUjKp1Y5DpzaohwYtfxnrQm1gPxlqbdZcg.PNG%2Fimage_fc5e9286.png&type=sc960_832', likes: 187 },
+      { id: 's24', name: '매봉공원', province: '광주광역시', city: '북구', district: '각화동', detailAddress: '매봉로 30', desc: '광주 야경의 최고 포인트. 맑은 날씨의 밤은 정말 아름답습니다.', tags: ['#야경','#공원','#광주'], lat: 35.1396, lng: 126.9136, img: 'https://search.pstatic.net/common/?src=http%3A%2F%2Fblogfiles.naver.net%2FMjAyMTA2MTZfMTcy%2FMDAxNjIzODIwOTgwMjcz.UWKwwChH-Vj2gFmrKfVqhrWYStwQzsNase8ESXflx4Ig.9uS_HddVUotQjllYTwV6_EZizGs1cqogX33w6Q5A1kwg.JPEG.5617kmy%2F1623820917586.jpg&type=sc960_832', likes: 156 },
+      { id: 's25', name: '구봉댐', province: '강원특별자치도', city: '춘천시', district: '신동면', detailAddress: '구봉댐로', desc: '호수를 배경으로 한 감성 사진촬영지. 아침 안개도 멋집니다.', tags: ['#호수','#감성','#춘천'], lat: 37.8689, lng: 127.5234, img: 'https://search.pstatic.net/common/?src=http%3A%2F%2Fblogfiles.naver.net%2FMjAyNTA0MTJfNCAg%2FMDAxNzQ0NDE5Mjk0OTYw.fn4HafqE5sSTUZltcKdJLATsn8OWbjjQJmTNrtSQ9d8g.uwNOmb_Y6R3Qh_fkmzoGI8q9MlXyBwCAYdeZs6rFNUgg.JPEG%2F20250411_192517.jpg&type=sc960_832', likes: 198 },
+      { id: 's26', name: '검봉산', province: '강원특별자치도', city: '태백시', district: '황지동', detailAddress: '검봉산로', desc: '봉우리 위의 일출 포인트. 예비 힐링 스팟입니다.', tags: ['#일출','#산','#태백'], lat: 37.1628, lng: 128.9881, img: 'https://search.pstatic.net/common/?src=http%3A%2F%2Fblogfiles.naver.net%2FMjAyMzA4MDZfMzYg%2FMDAxNjkxMzI3MzQzMzc2.OnHKGWl9Joo1G2L6r4DtoX8A-0WikRH5MMEvgPwi8hAg.3c5kBpM2A6m_cb_yQ11vY5dsj47gfOrvQyDlUIVJgq0g.GIF.gustjsdl8%2Fvllo.gif&type=sc960_832_gif', likes: 134 },
+      { id: 's27', name: '판교 카페거리', province: '경기도', city: '성남시', district: '분당구 삼평동', detailAddress: '판교역로 일대', desc: '감성 카페들이 모여있는 거리. 사진 찍기 좋은 인테리어 카페들입니다.', tags: ['#카페','#감성','#부천'], lat: 37.4919, lng: 127.1247, img: 'https://search.pstatic.net/common/?src=http%3A%2F%2Fblogfiles.naver.net%2FMjAyNDA0MDRfMTI0%2FMDAxNzEyMjE3MDcyMjAy.B5NEB1I1-AkjVPDZetbQuw99R8Tx7YJpxmg694Tiq6gg.jErMJ-uJdjAs02ChPI8u-pdyjbASOAPR2i6zb_pu3Y0g.JPEG%2FIMG_6349.jpg&type=sc960_832', likes: 167 },
+      { id: 's28', name: '유명산 등산로', province: '경기도', city: '가평군', district: '설악면', detailAddress: '유명산길', desc: '숲 속 트레킹 코스. 운동하면서 사진도 남길 수 있습니다.', tags: ['#숲','#겨울','#빙산','#폭포'], lat: 37.4511, lng: 127.0661, img: 'https://search.pstatic.net/common/?src=http%3A%2F%2Fblogfiles.naver.net%2FMjAyNDAxMjdfMTMz%2FMDAxNzA2MjgxNzQ2NTk5.oncbOQnK_3Wg45erLghjpY9X51czILpmJL4KyH2HVDcg.rHOYJUpGb2VWWXB8Sria-WQN2skYQKUWRBLjo86j_n8g.JPEG.djjm92%2FIMG_0687.jpg&type=sc960_832', likes: 145 },
+      { id: 's29', name: '대부바다향기테마파크', province: '경기도', city: '안산시', district: '단원구 대부동', detailAddress: '대부황금로', desc: '원형 야외공간에서 하늘을 배경으로 한 사진촬영이 가능합니다.', tags: ['#야외','#감성','#안산'], lat: 37.2919, lng: 126.8308, img: 'https://postfiles.pstatic.net/MjAxNzAzMTNfMjYz/MDAxNDg5MzY4Nzc2MDQy.0tI4DSiABffq_wKx41j1IK_Y1qp0lLztC9XixAeNGUgg.1zxNELeHvXAZaxf3Qa3RupDFFhcxALYvpH9Vv2uQk-Ig.JPEG.minbakgajago/jaeeun93.jpg?type=w3840', likes: 178 },
+      { id: 's30', name: '한강공원', province: '경기도', city: '구리시', district: '토평동', detailAddress: '한강대로', desc: '한강변 산책과 사진촬영을 동시에. 계절마다 다른 매력입니다.', tags: ['#강변','#공원','#구리'], lat: 37.6099, lng: 127.1289, img: 'https://search.pstatic.net/common/?src=http%3A%2F%2Fblogfiles.naver.net%2F20150518_127%2Fmarianz_1431912550400nNBPo_JPEG%2FIMG_6185.JPG&type=sc960_832', likes: 189 }
     ];
 
-    let currentSpot = spots[0];
+    // API 설정
+    // Codespaces 환경에서는 포트 포워딩 URL 사용
+    const getApiUrl = () => {
+      // Codespaces 환경 감지
+      if (window.location.hostname.includes('github.dev') || window.location.hostname.includes('githubpreview.dev')) {
+        // 현재 URL의 호스트를 기반으로 API URL 생성
+        const host = window.location.hostname.replace(/-8000\./, '-3000.');
+        return `${window.location.protocol}//${host}/api`;
+      }
+      // 로컬 개발 환경
+      return 'http://localhost:3000/api';
+    };
+    const API_URL = getApiUrl();
+    console.log('🔧 API URL:', API_URL);
+    
+    // 세션별 토큰 관리 (각 브라우저 탭/세션마다 독립적)
+    let authToken = sessionStorage.getItem('currentAuthToken') || null;
+    let currentUser = null;
+    
+    // authToken이 있으면 먼저 사용자 정보 복원 시도
+    if (authToken) {
+      try {
+        const payload = JSON.parse(atob(authToken.split('.')[1]));
+        currentUser = {
+          id: payload.id,
+          username: payload.username,
+          nickname: payload.nickname,
+          isAdmin: payload.isAdmin
+        };
+        console.log('🔐 세션 토큰으로 사용자 복원:', currentUser.nickname, `(세션 ID: ${payload.id})`);
+      } catch (e) {
+        console.error('토큰 파싱 오류:', e);
+        authToken = null;
+        sessionStorage.removeItem('currentAuthToken');
+      }
+    }
+    
+    // 사용자별 localStorage 키 생성 함수 (영구 저장용)
+    function getUserStorageKey(userId, key) {
+      return `user_${userId}_${key}`;
+    }
+    
+    // 세션에 토큰 저장 (현재 탭/세션에서만 유효)
+    function saveAuthToken(token, user) {
+      authToken = token;
+      currentUser = user;
+      sessionStorage.setItem('currentAuthToken', token);
+      // 사용자별 영구 저장소에도 저장 (나중에 복원용)
+      localStorage.setItem(getUserStorageKey(user.id, 'authToken'), token);
+      localStorage.setItem(getUserStorageKey(user.id, 'lastLogin'), new Date().toISOString());
+      console.log(`✅ ${user.nickname}님 로그인 완료 (세션 & 영구저장)`);
+    }
+    
+    // 로그아웃 시 세션 및 영구 저장소 정리
+    function clearAuthToken() {
+      if (currentUser) {
+        const userId = currentUser.id;
+        localStorage.removeItem(getUserStorageKey(userId, 'authToken'));
+        localStorage.removeItem(getUserStorageKey(userId, 'lastLogin'));
+        console.log(`🗑️ ${currentUser.nickname}님 데이터 삭제`);
+      }
+      sessionStorage.removeItem('currentAuthToken');
+      authToken = null;
+      currentUser = null;
+    }
 
-    function renderList(filter=''){
-      const container = document.getElementById('listContainer');
-      container.innerHTML = '';
-      const q = filter.trim().toLowerCase();
-      const filtered = spots.filter(s => {
-        if(!q) return true;
-        if(s.name.toLowerCase().includes(q)) return true;
-        if(s.desc.toLowerCase().includes(q)) return true;
-        if(s.tags.join(' ').toLowerCase().includes(q)) return true;
-        return false;
-      });
-      for(const s of filtered){
-        const card = document.createElement('div');
-        card.className = 'card';
-        card.innerHTML = `
-          <img src="${s.img}" alt="${s.name}">
-          <div>
-            <h3>${s.name}</h3>
-            <p>${s.desc}</p>
-            <div class="tags">${s.tags.join(' ')}</div>
-          </div>`;
-        card.onclick = ()=>{ showDetail(s) };
-        container.appendChild(card);
+    // GitHub Codespaces 관련 함수 제거됨
+
+    let spots = spotsData.map(s => ({
+      ...s,
+      comments: [],
+      liked: false,
+      province: s.province || '',
+      city: s.city || '',
+      district: s.district || '',
+      detailAddress: s.detailAddress || '',
+      address: s.address || '',
+      placeName: s.placeName || '',
+      mapImg: s.mapImg || '',
+      author: null,
+      authorId: null
+    }));
+
+    let currentSpot = null;
+    let map = null;
+    let mapMarkers = [];
+    let galleryImages = [];
+    let currentGalleryIndex = 0;
+    let galleryTouchStartX = 0;
+    let galleryTouchEndX = 0;
+
+    // === 인증 관련 함수 ===
+    
+    async function checkAuth() {
+      // 세션에 저장된 토큰이 있으면 그대로 사용 (이미 로그인된 상태)
+      if (authToken && currentUser) {
+        console.log('🔐 세션에서 사용자 복원:', currentUser.nickname);
+        updateUserInfo(currentUser);
+        return true;
+      }
+
+      // 로그인되지 않은 상태
+      console.log('ℹ️ 로그인이 필요합니다.');
+      updateUserInfo(null, true);
+      return false;
+    }
+
+    function updateUserInfo(user, isError = false) {
+      const userInfoDiv = document.getElementById('userInfo');
+      if (user) {
+        const avatarHTML = '👤';
+        const adminBadge = user.isAdmin ? ' <span style="color: #f39c12;">👑</span>' : '';
+        userInfoDiv.innerHTML = `
+          <div style="display: flex; align-items: center; gap: 10px;">
+            ${avatarHTML}
+            <span><strong>${user.nickname}</strong>${adminBadge}님</span>
+            <button class="btn-logout" onclick="handleLogout()">로그아웃</button>
+          </div>
+        `;
+      } else if (isError) {
+        // 로그인 필요
+        userInfoDiv.innerHTML = `
+          <div style="display: flex; align-items: center; gap: 10px; font-size: 14px;">
+            <button class="btn-login" onclick="showLoginModal()">로그인</button>
+            <button class="btn-login" onclick="showRegisterModal()">회원가입</button>
+          </div>
+        `;
+      } else {
+        // 로딩 중
+        userInfoDiv.innerHTML = `
+          <div style="display: flex; align-items: center; gap: 10px; font-size: 14px; color: #666;">
+            <i class="fas fa-circle-notch fa-spin"></i>
+            <span>로딩 중...</span>
+          </div>
+        `;
       }
     }
 
-    function onSearch(v){
-      renderList(v);
+    // === 로그인/회원가입 모달 함수 ===
+
+    function showLoginModal() {
+      document.getElementById('loginModal').classList.add('active');
+      document.getElementById('loginError').classList.remove('active');
+      document.getElementById('loginUsername').value = '';
+      document.getElementById('loginPassword').value = '';
     }
 
-    function show(view){
-      document.getElementById('mapView').style.display = (view==='map') ? 'block' : 'none';
-      document.getElementById('listView').style.display = (view==='list') ? 'block' : 'none';
-      document.getElementById('detailView').style.display = (view==='detail') ? 'block' : 'none';
-      if(view==='list') renderList(document.getElementById('searchInput').value||'');
+    function closeLoginModal() {
+      document.getElementById('loginModal').classList.remove('active');
     }
 
-    function showDetail(spot){
-      currentSpot = spot;
-      document.getElementById('detailImage').src = spot.img;
-      document.querySelector('#detailView h2').innerText = spot.name;
-      document.querySelector('#detailView p').innerText = spot.desc;
-      // update chips
-      const chips = spot.tags.map(t=>`<span class="chip">${t}</span>`).join(' ');
-      document.querySelector('#detailView div').innerHTML = chips;
-      // clear reviews list and add default
-      const reviews = document.getElementById('reviewsList');
-      reviews.innerHTML = '<div><strong>익명</strong> — 사람이 거의 없었어요. 안전하고 편안한 곳.</div>';
-      show('detail');
+    function showRegisterModal() {
+      document.getElementById('registerModal').classList.add('active');
+      document.getElementById('registerError').classList.remove('active');
+      document.getElementById('registerUsername').value = '';
+      document.getElementById('registerNickname').value = '';
+      document.getElementById('registerPassword').value = '';
     }
 
-    function onFileSelected(e){
-      const file = e.target.files[0];
-      if(!file) return;
-      const reader = new FileReader();
-      reader.onload = function(ev){
-        const data = ev.target.result;
-        // simulate upload by adding to reviews as image
-        const reviews = document.getElementById('reviewsList');
-        const div = document.createElement('div');
-        div.style.marginTop = '8px';
-        div.innerHTML = `<div><strong>내 사진</strong></div><img src="${data}" style="max-height:160px;border-radius:6px;margin-top:6px">`;
-        reviews.prepend(div);
-        alert('미리보기: 사진이 업로드된 것처럼 리뷰에 추가되었습니다 (실제 업로드는 서버 연동 필요).');
+    function closeRegisterModal() {
+      document.getElementById('registerModal').classList.remove('active');
+    }
+
+    async function handleLogin(e) {
+      e.preventDefault();
+      const username = document.getElementById('loginUsername').value.trim();
+      const password = document.getElementById('loginPassword').value;
+      const errorDiv = document.getElementById('loginError');
+
+      try {
+        const response = await fetch(`${API_URL}/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          saveAuthToken(data.token, data.user);
+          updateUserInfo(currentUser);
+          closeLoginModal();
+          alert(`환영합니다, ${currentUser.nickname}님!`);
+          await loadSpotsFromServer();
+        } else {
+          errorDiv.textContent = data.error || '로그인에 실패했습니다.';
+          errorDiv.classList.add('active');
+        }
+      } catch (error) {
+        console.error('로그인 오류:', error);
+        errorDiv.textContent = '서버 연결에 실패했습니다.';
+        errorDiv.classList.add('active');
+      }
+    }
+
+    async function handleRegister(e) {
+      e.preventDefault();
+      const username = document.getElementById('registerUsername').value.trim();
+      const nickname = document.getElementById('registerNickname').value.trim();
+      const password = document.getElementById('registerPassword').value;
+      const errorDiv = document.getElementById('registerError');
+
+      try {
+        const response = await fetch(`${API_URL}/auth/register`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, nickname, password })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          saveAuthToken(data.token, data.user);
+          updateUserInfo(currentUser);
+          closeRegisterModal();
+          alert(`환영합니다, ${currentUser.nickname}님! 회원가입이 완료되었습니다.`);
+          await loadSpotsFromServer();
+        } else {
+          errorDiv.textContent = data.error || '회원가입에 실패했습니다.';
+          errorDiv.classList.add('active');
+        }
+      } catch (error) {
+        console.error('회원가입 오류:', error);
+        errorDiv.textContent = '서버 연결에 실패했습니다.';
+        errorDiv.classList.add('active');
+      }
+    }
+
+    function handleLogout() {
+      if (confirm('로그아웃하시겠습니까?')) {
+        clearAuthToken();
+        updateUserInfo(null);
+        alert('로그아웃되었습니다. 새로고침하면 자동으로 다시 로그인됩니다.');
+      }
+    }
+
+    // === 관리자 로그인 함수 ===
+
+    function showAdminLoginModal() {
+      document.getElementById('adminLoginModal').style.display = 'flex';
+    }
+
+    function closeAdminLoginModal() {
+      document.getElementById('adminLoginModal').style.display = 'none';
+      document.getElementById('adminUsername').value = '';
+      document.getElementById('adminPassword').value = '';
+    }
+
+    async function adminLogin() {
+      const username = document.getElementById('adminUsername').value.trim();
+      const password = document.getElementById('adminPassword').value.trim();
+
+      if (!username || !password) {
+        alert('⚠️ 아이디와 비밀번호를 입력해주세요.');
+        return;
+      }
+
+      try {
+        const response = await fetch(`${API_URL}/auth/admin`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          saveAuthToken(data.token, data.user);
+          updateUserInfo(currentUser);
+          closeAdminLoginModal();
+          alert(`👑 관리자로 로그인되었습니다. ${currentUser.nickname}님 환영합니다!`);
+        } else {
+          alert(`❌ ${data.error || '로그인에 실패했습니다.'}`);
+        }
+      } catch (error) {
+        console.error('관리자 로그인 오류:', error);
+        alert('❌ 서버 연결에 실패했습니다.');
+      }
+    }
+
+    // === API 통신 함수 ===
+
+    async function loadSpotsFromServer() {
+      try {
+        console.log('🔄 서버에서 포토스팟 로딩 중...');
+        const response = await fetch(`${API_URL}/spots`);
+        const data = await response.json();
+        console.log('📦 서버에서 받은 포토스팟:', data.spots?.length || 0, '개');
+        
+        if (data.spots && data.spots.length > 0) {
+          // 서버에 데이터가 있으면 사용
+          spots = data.spots;
+          renderSpots();
+          renderMap();
+        } else {
+          // 서버에 데이터가 없으면 기존 로컬 데이터 유지
+          console.log('ℹ️ 서버에 데이터가 없습니다. 로컬 데이터 사용:', spots.length, '개');
+          renderSpots();
+          renderMap();
+        }
+      } catch (error) {
+        console.error('❌ 포토스팟 로드 실패:', error);
+        // 오류 발생 시 로컬 데이터 사용
+        console.log('ℹ️ 로컬 데이터 사용:', spots.length, '개');
+        renderSpots();
+        renderMap();
+      }
+    }
+
+    function loadLocalData() {
+      const saved = localStorage.getItem('photoSpotsData');
+      if(saved) {
+        const data = JSON.parse(saved);
+        // 이전 버전 호환: 'spotData' 형식이 있다면 그 구조를 변환
+        if(data.spots && Array.isArray(data.spots)) {
+          spots = data.spots.map(s => ({
+            id: s.id,
+            name: s.name || '',
+            desc: s.desc || '',
+            tags: Array.isArray(s.tags) ? s.tags : (s.tags ? String(s.tags).split(',') : []),
+            lat: parseFloat(s.lat) || 0,
+            lng: parseFloat(s.lng) || 0,
+            img: s.img || '',
+            comments: Array.isArray(s.comments) ? s.comments : [],
+            liked: !!s.liked,
+            likes: typeof s.likes === 'number' ? s.likes : (s.likes ? parseInt(s.likes) : 0),
+            province: s.province || '',
+            city: s.city || '',
+            district: s.district || '',
+            detailAddress: s.detailAddress || '',
+            address: s.address || '',
+            placeName: s.placeName || '',
+            mapImg: s.mapImg || ''
+          }));
+        } else if(data.spotData && Array.isArray(data.spotData)) {
+          // 이전 포맷 호환: spotData에는 일부 필드만 저장되어 있을 수 있음
+          const savedArr = data.spotData;
+          spots.forEach(s => {
+            const found = savedArr.find(d => d.id === s.id);
+            if(found) {
+              s.comments = found.comments || [];
+              s.liked = found.liked || false;
+            }
+          });
+        }
+      }
+    }
+
+    function saveLocalData() {
+      // 전체 스팟 상태를 저장합니다 (이름, 설명, 좌표, 이미지, 태그, 좋아요, 댓글 등)
+      const dataToSave = {
+        spots: spots.map(s => ({
+          id: s.id,
+          name: s.name,
+          desc: s.desc,
+          tags: s.tags,
+          lat: s.lat,
+          lng: s.lng,
+          img: s.img,
+          comments: s.comments || [],
+          liked: !!s.liked,
+          likes: typeof s.likes === 'number' ? s.likes : 0,
+          province: s.province || '',
+          city: s.city || '',
+          district: s.district || '',
+          detailAddress: s.detailAddress || '',
+          address: s.address || '',
+          placeName: s.placeName || '',
+          mapImg: s.mapImg || ''
+        }))
       };
-      reader.readAsDataURL(file);
-      // reset input so same file can be selected again
+      localStorage.setItem('photoSpotsData', JSON.stringify(dataToSave));
+    }
+
+    function switchView(view, src) {
+      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+      document.getElementById(view + 'View').classList.add('active');
+      // 탭 활성화: src가 엘리먼트이면 그대로, 아니면 ID로 보조 처리
+      document.querySelectorAll('.nav-tabs button').forEach(b => b.classList.remove('active'));
+      if (src && src.classList) {
+        src.classList.add('active');
+      } else {
+        const byId = document.getElementById(`tab-${view}`);
+        if (byId) byId.classList.add('active');
+      }
+
+      if(view === 'favorite') renderFavorites();
+      if(view === 'map') {
+        // 지도 탭으로 전환 시 지도 렌더링
+        setTimeout(() => renderMapView(), 100);
+      }
+      if(view === 'admin') {
+        // editingSpotId가 이미 설정되어 있지 않은 경우에만 폼 숨김
+        if (!editingSpotId) {
+          document.getElementById('adminForm').style.display = 'none';
+        }
+      }
+    }
+
+    function renderSpots(spotsToRender = spots) {
+      const grid = document.getElementById('spotsGrid');
+      if(spotsToRender.length === 0) {
+        grid.innerHTML = '<div class="empty-state" style="grid-column: 1 / -1;"><div class="empty-state-icon">🔍</div><p>검색 결과가 없습니다.</p></div>';
+        return;
+      }
+
+      grid.innerHTML = spotsToRender.map(s => {
+        const locationText = [s.province, s.city].filter(Boolean).join(' ');
+        const authorText = s.author ? `👤 ${s.author.nickname}` : '';
+        return `
+        <div class="spot-card" onclick="showDetail('${s.id}')">
+          <img src="${s.img}" alt="${s.name}" class="spot-card-image">
+          <div class="spot-card-content">
+            <div class="spot-card-title">${s.name}</div>
+            ${locationText ? `<div style="font-size: 12px; color: #666; margin-bottom: 4px;">📍 ${locationText}</div>` : ''}
+            ${authorText ? `<div style="font-size: 11px; color: #888; margin-bottom: 8px;">${authorText}</div>` : ''}
+            <div class="spot-card-desc">${s.desc.substring(0, 60)}...</div>
+            <div class="spot-card-tags">
+              ${s.tags.slice(0, 2).map(t => `<span class="tag">${t}</span>`).join('')}
+            </div>
+            <div class="spot-card-footer">
+              <div class="spot-card-stats">
+                <span>❤️ ${s.likes}</span>
+                <span>💬 ${s.comments.length}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+      }).join('');
+    }
+
+    function showDetail(spotId) {
+      currentSpot = spots.find(s => s.id === spotId);
+      if(!currentSpot) return;
+
+      document.getElementById('detailTitle').textContent = currentSpot.name;
+      
+      // 주소 정보 및 작성자 정보 표시
+      const locationParts = [currentSpot.province, currentSpot.city, currentSpot.detailAddress].filter(Boolean);
+      let locationHTML = locationParts.length > 0 ? '📍 ' + locationParts.join(' ') : '';
+      if (currentSpot.author) {
+        locationHTML += `<br><small style="color: #888;">👤 ${currentSpot.author.nickname}</small>`;
+      }
+      
+      document.getElementById('detailLocation').innerHTML = locationHTML;
+      
+      // 수정/삭제 버튼 표시 여부 결정 (작성자 또는 관리자)
+      const editBtn = document.getElementById('editSpotBtn');
+      const deleteBtn = document.getElementById('deleteSpotBtn');
+      if (currentUser && (currentSpot.authorId === currentUser.id || currentUser.isAdmin)) {
+        editBtn.style.display = 'block';
+        deleteBtn.style.display = 'block';
+      } else {
+        editBtn.style.display = 'none';
+        deleteBtn.style.display = 'none';
+      }
+      
+      document.getElementById('detailImage').src = currentSpot.img;
+      document.getElementById('detailDesc').textContent = currentSpot.desc;
+      document.getElementById('detailTags').innerHTML = currentSpot.tags.map(t => `<span class="tag">${t}</span>`).join(' ');
+
+      document.getElementById('likeCount').textContent = currentSpot.likes;
+      document.getElementById('commentCount').textContent = currentSpot.comments.length;
+      document.getElementById('actionCommentCount').textContent = currentSpot.comments.length;
+      document.getElementById('likeBtn').classList.toggle('liked', currentSpot.liked);
+
+      // 갤러리 로드 (서버에서)
+      galleryImages = currentSpot.gallery || [];
+      currentGalleryIndex = 0;
+      updateGallery();
+
+      renderComments();
+
+      const detailView = document.getElementById('detailView');
+      detailView.classList.add('active');
+      document.querySelectorAll('.view').forEach(v => v !== detailView && v.classList.remove('active'));
+      document.querySelectorAll('.nav-tabs button').forEach(b => b.classList.remove('active'));
+
+      updateMapButton();
+    }
+
+    function toggleEditMode() {
+      if (!currentSpot) return;
+      
+      // 권한 확인 (작성자 또는 관리자)
+      if (!currentUser || (currentSpot.authorId !== currentUser.id && !currentUser.isAdmin)) {
+        alert('❌ 수정 권한이 없습니다.');
+        return;
+      }
+      
+      const editForm = document.getElementById('inlineEditForm');
+      const editBtn = document.getElementById('editSpotBtn');
+      
+      if (editForm.style.display === 'none') {
+        // 수정 모드 활성화
+        editForm.style.display = 'block';
+        editBtn.innerHTML = '<i class="fas fa-times"></i> 취소';
+        
+        // 현재 데이터를 폼에 로드
+        document.getElementById('inlineEditName').value = currentSpot.name || '';
+        document.getElementById('inlineEditProvince').value = currentSpot.province || '';
+        
+        // 도시 옵션 업데이트
+        updateInlineEditCitySelect();
+        document.getElementById('inlineEditCity').value = currentSpot.city || '';
+        
+        const fullAddress = [currentSpot.district, currentSpot.detailAddress].filter(x => x).join(' ');
+        document.getElementById('inlineEditDetailAddress').value = fullAddress;
+        document.getElementById('inlineEditDesc').value = currentSpot.desc || '';
+        document.getElementById('inlineEditTags').value = (currentSpot.tags || []).join(',');
+        document.getElementById('inlineEditImg').value = currentSpot.img || '';
+        
+        // 폼으로 스크롤
+        editForm.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      } else {
+        // 수정 모드 비활성화
+        cancelInlineEdit();
+      }
+    }
+
+    function updateInlineEditCitySelect() {
+      const provinceValue = document.getElementById('inlineEditProvince').value;
+      const citySelect = document.getElementById('inlineEditCity');
+      
+      citySelect.innerHTML = '<option value="">선택</option>';
+      
+      if (provinceValue && koreanRegions[provinceValue]) {
+        koreanRegions[provinceValue].forEach(city => {
+          citySelect.innerHTML += `<option value="${city}">${city}</option>`;
+        });
+      }
+    }
+
+    function cancelInlineEdit() {
+      document.getElementById('inlineEditForm').style.display = 'none';
+      document.getElementById('editSpotBtn').innerHTML = '<i class="fas fa-edit"></i> 수정';
+    }
+
+    async function saveInlineEdit() {
+      if (!currentSpot || !currentUser) return;
+      
+      // 권한 재확인
+      if (currentSpot.authorId !== currentUser.id && !currentUser.isAdmin) {
+        alert('❌ 수정 권한이 없습니다.');
+        return;
+      }
+      
+      const updateData = {
+        name: document.getElementById('inlineEditName').value.trim(),
+        province: document.getElementById('inlineEditProvince').value.trim(),
+        city: document.getElementById('inlineEditCity').value.trim(),
+        district: '',
+        detailAddress: document.getElementById('inlineEditDetailAddress').value.trim(),
+        desc: document.getElementById('inlineEditDesc').value.trim(),
+        tags: document.getElementById('inlineEditTags').value.split(',').map(t => t.trim()).filter(t => t),
+        img: document.getElementById('inlineEditImg').value.trim(),
+        lat: currentSpot.lat,
+        lng: currentSpot.lng
+      };
+      
+      if (!updateData.name || !updateData.province || !updateData.city || !updateData.desc) {
+        alert('⚠️ 필수 항목을 모두 입력해주세요.');
+        return;
+      }
+      
+      try {
+        // 기존 게시글 수정 (항상 PUT 사용)
+        const url = `${API_URL}/spots/${currentSpot.id}`;
+        const method = 'PUT';
+
+        const response = await fetch(url, {
+          method,
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authToken}`
+          },
+          body: JSON.stringify(updateData)
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          alert(`✅ "${updateData.name}" 정보가 수정되었습니다!`);
+          
+          // 로컬 spots 배열에서 해당 포토스팟 업데이트
+          const spotIndex = spots.findIndex(s => s.id === currentSpot.id);
+          if (spotIndex !== -1) {
+            spots[spotIndex] = {
+              ...spots[spotIndex],
+              ...updateData,
+              author: data.spot?.author || currentSpot.author
+            };
+          }
+          
+          cancelInlineEdit();
+          renderSpots();
+          // 업데이트된 데이터로 상세 페이지 새로고침
+          showDetail(currentSpot.id);
+        } else {
+          alert(`❌ ${data.error || '저장에 실패했습니다.'}`);
+        }
+      } catch (error) {
+        console.error('저장 오류:', error);
+        alert('❌ 서버 연결에 실패했습니다.');
+      }
+    }
+
+    async function deleteCurrentSpotInline() {
+      if (!currentSpot || !currentUser) return;
+      
+      // 권한 확인
+      if (currentSpot.authorId !== currentUser.id && !currentUser.isAdmin) {
+        alert('❌ 삭제 권한이 없습니다.');
+        return;
+      }
+      
+      if (!confirm(`"${currentSpot.name}"을(를) 정말 삭제하시겠습니까?`)) {
+        return;
+      }
+      
+      try {
+        const response = await fetch(`${API_URL}/spots/${currentSpot.id}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${authToken}`
+          }
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          alert('✅ 포토스팟이 삭제되었습니다.');
+          
+          // 로컬 spots 배열에서 해당 포토스팟 제거
+          const spotIndex = spots.findIndex(s => s.id === currentSpot.id);
+          if (spotIndex !== -1) {
+            spots.splice(spotIndex, 1);
+          }
+          
+          renderSpots();
+          switchView('list');
+        } else {
+          alert(`❌ ${data.error || '삭제에 실패했습니다.'}`);
+        }
+      } catch (error) {
+        console.error('삭제 오류:', error);
+        alert('❌ 서버 연결에 실패했습니다.');
+      }
+    }
+
+    async function deleteCurrentSpot() {
+      if (!currentSpot) return;
+      editingSpotId = currentSpot.id;
+      await deleteSpot();
+      if (spots.find(s => s.id === currentSpot.id)) {
+        // 삭제 실패
+        return;
+      }
+      // 삭제 성공 시 목록으로 이동
+      switchView('list');
+    }
+
+    function renderComments() {
+      const list = document.getElementById('commentsList');
+      document.getElementById('totalComments').textContent = currentSpot.comments.length;
+      
+      if(currentSpot.comments.length === 0) {
+        list.innerHTML = '<div class="empty-state"><p>첫 번째 댓글을 작성해보세요!</p></div>';
+        return;
+      }
+
+      list.innerHTML = currentSpot.comments.map((c, idx) => `
+        <div class="comment-item">
+          <div class="comment-author">${c.author}</div>
+          <div class="comment-text">${c.text}</div>
+          <div class="comment-date">${new Date(c.date).toLocaleDateString('ko-KR')}</div>
+          <button class="comment-delete" onclick="deleteComment(${idx})">삭제</button>
+        </div>
+      `).join('');
+    }
+
+    function addComment() {
+      const input = document.getElementById('commentInput');
+      const text = input.value.trim();
+      if(!text) return;
+
+      currentSpot.comments.push({
+        author: '익명 사용자',
+        text: text,
+        date: new Date().toISOString()
+      });
+
+      input.value = '';
+      renderComments();
+      document.getElementById('commentCount').textContent = currentSpot.comments.length;
+      document.getElementById('actionCommentCount').textContent = currentSpot.comments.length;
+      saveLocalData();
+    }
+
+    function deleteComment(idx) {
+      currentSpot.comments.splice(idx, 1);
+      renderComments();
+      document.getElementById('commentCount').textContent = currentSpot.comments.length;
+      document.getElementById('actionCommentCount').textContent = currentSpot.comments.length;
+      saveLocalData();
+    }
+
+    function toggleLike() {
+      currentSpot.liked = !currentSpot.liked;
+      if(currentSpot.liked) currentSpot.likes++;
+      else currentSpot.likes--;
+      
+      document.getElementById('likeBtn').classList.toggle('liked');
+      document.getElementById('likeCount').textContent = currentSpot.likes;
+      
+      saveLocalData();
+    }
+
+    async function onFileSelected(e) {
+      const files = e.target.files;
+      if(!files || files.length === 0) return;
+
+      if (!currentSpot || !authToken) {
+        alert('로그인이 필요합니다.');
+        return;
+      }
+
+      const newImages = [];
+      let processed = 0;
+
+      // 파일들을 읽어서 base64로 변환
+      Array.from(files).forEach(file => {
+        const reader = new FileReader();
+        reader.onload = async (evt) => {
+          newImages.push(evt.target.result);
+          processed++;
+
+          // 모든 파일 처리 완료
+          if (processed === files.length) {
+            try {
+              const response = await fetch(`${API_URL}/spots/${currentSpot.id}/gallery`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${authToken}`
+                },
+                body: JSON.stringify({ images: newImages })
+              });
+
+              const data = await response.json();
+              if (response.ok) {
+                galleryImages = data.gallery;
+                currentSpot.gallery = data.gallery;
+                updateGallery();
+                alert(`${files.length}개의 사진이 업로드되었습니다!`);
+              } else {
+                alert('업로드 실패: ' + (data.error || '서버 오류'));
+              }
+            } catch (error) {
+              console.error('업로드 오류:', error);
+              alert('업로드 중 오류가 발생했습니다.');
+            }
+          }
+        };
+        reader.readAsDataURL(file);
+      });
+
       e.target.value = '';
     }
 
-    // initial render
-    renderList();
-    show('list');
+    // 갤러리 업데이트
+    function updateGallery() {
+      const gallery = document.getElementById('photoGallery');
+      const container = document.getElementById('galleryContainer');
+      const indicators = document.getElementById('galleryIndicators');
+      const counter = document.getElementById('galleryCounter');
+      const prevBtn = document.querySelector('.gallery-nav.prev');
+      const nextBtn = document.querySelector('.gallery-nav.next');
+      const deleteBtn = document.querySelector('.gallery-delete-btn');
+
+      if (galleryImages.length === 0) {
+        gallery.style.display = 'none';
+        return;
+      }
+
+      gallery.style.display = 'block';
+
+      // 슬라이드 생성
+      container.innerHTML = galleryImages.map((img, idx) => `
+        <div class="gallery-slide">
+          <img src="${img}" alt="Photo ${idx + 1}">
+        </div>
+      `).join('');
+
+      // 인디케이터 생성
+      indicators.innerHTML = galleryImages.map((_, idx) => `
+        <div class="gallery-indicator ${idx === currentGalleryIndex ? 'active' : ''}" onclick="goToGallerySlide(${idx})"></div>
+      `).join('');
+
+      // 카운터 업데이트
+      counter.textContent = `${currentGalleryIndex + 1} / ${galleryImages.length}`;
+
+      // 네비게이션 버튼 표시
+      prevBtn.style.display = galleryImages.length > 1 ? 'flex' : 'none';
+      nextBtn.style.display = galleryImages.length > 1 ? 'flex' : 'none';
+      deleteBtn.style.display = galleryImages.length > 0 ? 'flex' : 'none';
+
+      // 현재 슬라이드로 이동
+      container.style.transform = `translateX(-${currentGalleryIndex * 100}%)`;
+
+      // 터치 이벤트 등록
+      setupGalleryTouch();
+    }
+
+    // 갤러리 터치 이벤트
+    function setupGalleryTouch() {
+      const container = document.getElementById('galleryContainer');
+      
+      container.addEventListener('touchstart', (e) => {
+        galleryTouchStartX = e.changedTouches[0].screenX;
+      }, { passive: true });
+
+      container.addEventListener('touchend', (e) => {
+        galleryTouchEndX = e.changedTouches[0].screenX;
+        handleGallerySwipe();
+      }, { passive: true });
+    }
+
+    function handleGallerySwipe() {
+      const swipeThreshold = 50;
+      const diff = galleryTouchStartX - galleryTouchEndX;
+
+      if (Math.abs(diff) > swipeThreshold) {
+        if (diff > 0) {
+          galleryNext();
+        } else {
+          galleryPrev();
+        }
+      }
+    }
+
+    function galleryPrev() {
+      if (currentGalleryIndex > 0) {
+        currentGalleryIndex--;
+        updateGallery();
+      }
+    }
+
+    function galleryNext() {
+      if (currentGalleryIndex < galleryImages.length - 1) {
+        currentGalleryIndex++;
+        updateGallery();
+      }
+    }
+
+    function goToGallerySlide(index) {
+      currentGalleryIndex = index;
+      updateGallery();
+    }
+
+    async function deleteCurrentGalleryImage() {
+      if (galleryImages.length === 0) return;
+      
+      if (!currentSpot || !authToken) {
+        alert('로그인이 필요합니다.');
+        return;
+      }
+
+      if (confirm('이 사진을 삭제하시겠습니까?')) {
+        try {
+          const response = await fetch(`${API_URL}/spots/${currentSpot.id}/gallery/${currentGalleryIndex}`, {
+            method: 'DELETE',
+            headers: {
+              'Authorization': `Bearer ${authToken}`
+            }
+          });
+
+          const data = await response.json();
+          if (response.ok) {
+            galleryImages = data.gallery;
+            currentSpot.gallery = data.gallery;
+            
+            // 인덱스 조정
+            if (currentGalleryIndex >= galleryImages.length && currentGalleryIndex > 0) {
+              currentGalleryIndex--;
+            }
+            
+            updateGallery();
+            
+            if (galleryImages.length === 0) {
+              alert('모든 사진이 삭제되었습니다.');
+            }
+          } else {
+            alert('삭제 실패: ' + (data.error || '서버 오류'));
+          }
+        } catch (error) {
+          console.error('삭제 오류:', error);
+          alert('삭제 중 오류가 발생했습니다.');
+        }
+      }
+    }
+
+    // 목록 페이지 필터 함수
+    function applyFilters() {
+      const search = document.getElementById('searchInput').value.toLowerCase();
+      const provinceFilter = document.getElementById('filterProvince').value;
+      const cityFilter = document.getElementById('filterCity').value;
+      const districtFilter = document.getElementById('filterDistrict').value;
+
+      let filtered = spots.filter(s => {
+        const matchSearch = !search || s.name.toLowerCase().includes(search) || s.desc.toLowerCase().includes(search);
+        const matchProvince = !provinceFilter || s.province === provinceFilter;
+        const matchCity = !cityFilter || s.city === cityFilter;
+        return matchSearch && matchProvince && matchCity;
+      });
+
+      renderSpots(filtered);
+      
+      // 광역시/도 선택 시 시/군/구 옵션 업데이트
+      updateCityOptions();
+    }
+    
+    // 필터 대분류 변경 시 중분류 업데이트
+    function updateFilterCitySelect() {
+      const provinceSelect = document.getElementById('filterProvince');
+      const citySelect = document.getElementById('filterCity');
+      const provinceValue = provinceSelect.value;
+      
+      citySelect.innerHTML = '<option value="">시/군/구 선택</option>';
+      
+      if (provinceValue && koreanRegions[provinceValue]) {
+        koreanRegions[provinceValue].forEach(city => {
+          citySelect.innerHTML += `<option value="${city}">${city}</option>`;
+        });
+      }
+      
+      applyFilters();
+    }
+    
+    function updateCityOptions() {
+      // 이 함수는 더 이상 사용하지 않지만 하위 호환성을 위해 유지
+      updateFilterCitySelect();
+    }
+    
+    // 이벤트 리스너 등록
+    document.getElementById('searchInput').addEventListener('input', applyFilters);
+
+    function renderFavorites() {
+      const favorited = spots.filter(s => s.liked);
+      const grid = document.getElementById('favoriteGrid');
+      
+      if(favorited.length === 0) {
+        grid.innerHTML = '<div class="empty-state" style="grid-column: 1 / -1;"><div class="empty-state-icon">❤️</div><p>아직 좋아요한 포토존이 없습니다.</p></div>';
+        return;
+      }
+
+      grid.innerHTML = favorited.map(s => {
+        const locationText = [s.province, s.city].filter(Boolean).join(' ');
+        return `
+        <div class="spot-card" onclick="showDetail('${s.id}')">
+          <img src="${s.img}" alt="${s.name}" class="spot-card-image">
+          <div class="spot-card-content">
+            <div class="spot-card-title">${s.name}</div>
+            ${locationText ? `<div style="font-size: 12px; color: #666; margin-bottom: 8px;">📍 ${locationText}</div>` : ''}
+            <div class="spot-card-desc">${s.desc.substring(0, 60)}...</div>
+            <div class="spot-card-tags">
+              ${s.tags.slice(0, 2).map(t => `<span class="tag">${t}</span>`).join('')}
+            </div>
+          </div>
+        </div>
+      `;
+      }).join('');
+    }
+
+    function shareSpot() {
+      const url = `http://127.0.0.1:8000/preview/index.html?spot=${currentSpot.id}`;
+      alert(`공유 링크:\n${url}`);
+    }
+
+    function openMapDirection() {
+      const name = encodeURIComponent((currentSpot.placeName && currentSpot.placeName.trim()) || currentSpot.name || '목적지');
+      const dlat = currentSpot.lat;
+      const dlng = currentSpot.lng;
+      // 네이버 지도 길찾기(웹) 목적지 중심으로 열기. 시작점은 비워두고 목적지만 채움.
+      const directionsUrl = `https://map.naver.com/v5/directions//${dlat},${dlng},${name}`;
+      window.open(directionsUrl, '_blank');
+    }
+
+    // 지도 필터 함수들 제거됨 (필터 기능 삭제)
+    
+    function renderMapView() {
+      // Leaflet 지도 초기화
+      const container = document.getElementById('mapContainer');
+      if(!container) {
+        console.error('❌ 지도 컨테이너를 찾을 수 없습니다');
+        return;
+      }
+      
+      console.log('🗺️ 지도 렌더링 시작...');
+      
+      // 기존 지도가 있으면 제거
+      if(map) {
+        map.remove();
+        map = null;
+      }
+      
+      // 모든 포토스팟 표시 (필터링 없음)
+      let filteredSpots = spots;
+      console.log('📍 표시할 포토스팟 개수:', filteredSpots.length);
+      
+      // 지도 초기화 (한국 중심 좌표)
+      try {
+        map = L.map('mapContainer').setView([36.5, 127.5], 7);
+        console.log('✅ 지도 초기화 완료');
+        
+        // 지도 크기 재조정 (탭 전환 시 필요)
+        setTimeout(() => {
+          if(map) map.invalidateSize();
+        }, 100);
+      } catch (error) {
+        console.error('❌ 지도 초기화 오류:', error);
+        return;
+      }
+      
+      // OpenStreetMap 타일 레이어 추가
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        maxZoom: 18,
+        minZoom: 6
+      }).addTo(map);
+      
+      // 필터링된 포토스팟에 마커 추가
+      let markerCount = 0;
+      filteredSpots.forEach(spot => {
+        if(spot.lat && spot.lng) {
+          // 커스텀 아이콘 생성
+          const icon = L.divIcon({
+            className: 'custom-marker',
+            html: '<div style="background:var(--primary);width:30px;height:30px;border-radius:50%;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;"><i class="fas fa-camera" style="color:white;font-size:14px;"></i></div>',
+            iconSize: [30, 30],
+            iconAnchor: [15, 15]
+          });
+          
+          // 마커 생성
+          const marker = L.marker([spot.lat, spot.lng], { icon: icon }).addTo(map);
+          markerCount++;
+          
+          // 팝업 내용 생성
+          const popupContent = `
+            <div>
+              <div class="popup-title">${spot.name}</div>
+              <div class="popup-desc">${spot.desc}</div>
+              <div class="popup-tags">
+                ${spot.tags.map(tag => `<span class="popup-tag">${tag}</span>`).join('')}
+              </div>
+              <button class="popup-button" onclick="showDetail('${spot.id}')">
+                자세히 보기
+              </button>
+            </div>
+          `;
+          
+          marker.bindPopup(popupContent, {
+            maxWidth: 250,
+            className: 'custom-popup'
+          });
+          
+          // 마커에 호버 효과
+          marker.on('mouseover', function() {
+            this.openPopup();
+          });
+        }
+      });
+      
+      console.log('📍 마커 추가 완료:', markerCount, '개');
+      
+      // 모든 마커가 보이도록 지도 범위 조정
+      const validSpots = filteredSpots.filter(s => s.lat && s.lng);
+      if(validSpots.length > 0) {
+        const bounds = L.latLngBounds(validSpots.map(s => [s.lat, s.lng]));
+        map.fitBounds(bounds, { padding: [50, 50] });
+        console.log('✅ 지도 범위 조정 완료');
+      } else {
+        console.warn('⚠️ 좌표가 있는 포토스팟이 없습니다');
+      }
+    }
+
+    function updateMapButton() {
+      // 지도 버튼은 항상 활성화 (좌표가 있으면 자동으로 Static Map 생성)
+      const btn = document.getElementById('detailMapBtn');
+      if(!btn || !currentSpot) return;
+      
+      btn.style.opacity = '1';
+      btn.style.cursor = 'pointer';
+      btn.disabled = false;
+    }
+
+    function showMapImage() {
+      if(!currentSpot) return;
+      
+      // 네이버 지도로 바로 연동
+      const name = encodeURIComponent(currentSpot.placeName || currentSpot.name || '목적지');
+      const lat = currentSpot.lat || 37.5665;
+      const lng = currentSpot.lng || 126.9780;
+      
+      // 네이버 지도 검색 결과로 열기
+      const naverMapUrl = `https://map.naver.com/v5/search/${name}?c=${lng},${lat},15,0,0,0,dh`;
+      window.open(naverMapUrl, '_blank');
+    }
+
+    function closeMapModal(event) {
+      if(!event || event.target.id === 'mapModal' || event.target.className === 'map-modal-close') {
+        document.getElementById('mapModal').classList.remove('active');
+      }
+    }
+
+    let editingSpotId = null;
+
+    function initAdminForm() {
+      const select = document.getElementById('adminSelect');
+      select.innerHTML = '<option value="">포토스팟 선택</option>' +
+        spots.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+      
+      select.addEventListener('change', (e) => {
+        if(e.target.value) {
+          loadSpotForEdit(e.target.value);
+        } else {
+          document.getElementById('adminForm').style.display = 'none';
+        }
+      });
+    }
+
+    function loadSpotForEdit(spotId) {
+      const spot = spots.find(s => s.id === spotId);
+      if(!spot) {
+        console.error('Spot not found:', spotId);
+        return;
+      }
+
+      console.log('Loading spot:', spot);
+      editingSpotId = spotId;
+      
+      document.getElementById('editName').value = spot.name || '';
+      document.getElementById('editProvince').value = spot.province || '';
+      
+      // 대분류 선택 후 중분류 옵션 업데이트
+      updateEditCitySelect();
+      
+      // 중분류 값 설정
+      const citySelect = document.getElementById('editCity');
+      if(spot.city) {
+        citySelect.value = spot.city;
+      }
+      
+      // district와 detailAddress 합쳐서 표시
+      const fullAddress = [spot.district, spot.detailAddress].filter(x => x).join(' ');
+      document.getElementById('editDetailAddress').value = fullAddress;
+      document.getElementById('editDesc').value = spot.desc || '';
+      document.getElementById('editTags').value = (spot.tags || []).join(',');
+      document.getElementById('editImg').value = spot.img || '';
+      document.getElementById('adminForm').style.display = 'block';
+      
+      console.log('Form loaded successfully');
+    }
+    
+    // 관리 페이지: 대분류 선택 시 중분류 옵션 업데이트
+    function updateEditCitySelect() {
+      const provinceValue = document.getElementById('editProvince').value;
+      const citySelect = document.getElementById('editCity');
+      
+      // 옵션 업데이트
+      const currentCity = citySelect.value;
+      citySelect.innerHTML = '<option value="">선택</option>';
+      
+      if(provinceValue && koreanRegions[provinceValue]) {
+        koreanRegions[provinceValue].forEach(city => {
+          citySelect.innerHTML += `<option value="${city}">${city}</option>`;
+        });
+      }
+      
+      // 기존 값이 있으면 유지
+      if(currentCity && koreanRegions[provinceValue]?.includes(currentCity)) {
+        citySelect.value = currentCity;
+      }
+    }
+    
+    async function saveEditData() {
+      if(!editingSpotId) return;
+
+      // 로그인 확인
+      if (!authToken || !currentUser) {
+        alert('⚠️ 로그인이 필요합니다.');
+        showLoginModal();
+        return;
+      }
+
+      const spot = spots.find(s => s.id === editingSpotId);
+      if(!spot) return;
+
+      // 새 포토스팟이 아닌 경우 권한 확인 (관리자는 모든 스팟 수정 가능)
+      if (spot.authorId && spot.authorId !== currentUser.id && !currentUser.isAdmin) {
+        alert('❌ 수정 권한이 없습니다. 본인이 작성한 포토스팟만 수정할 수 있습니다.');
+        return;
+      }
+
+      // 데이터 준비
+      const updateData = {
+        name: document.getElementById('editName').value.trim(),
+        province: document.getElementById('editProvince').value.trim(),
+        city: document.getElementById('editCity').value.trim(),
+        district: '',
+        detailAddress: document.getElementById('editDetailAddress').value.trim(),
+        desc: document.getElementById('editDesc').value.trim(),
+        tags: document.getElementById('editTags').value.split(',').map(t => t.trim()).filter(t => t),
+        img: document.getElementById('editImg').value.trim(),
+        lat: spot.lat,
+        lng: spot.lng
+      };
+
+      try {
+        const url = spot.authorId ? `${API_URL}/spots/${editingSpotId}` : `${API_URL}/spots`;
+        const method = spot.authorId ? 'PUT' : 'POST';
+
+        const response = await fetch(url, {
+          method,
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authToken}`
+          },
+          body: JSON.stringify(updateData)
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          alert(`✅ "${updateData.name}" 정보가 ${spot.authorId ? '수정' : '추가'}되었습니다!`);
+          
+          if (spot.authorId) {
+            // 기존 포토스팟 수정
+            const spotIndex = spots.findIndex(s => s.id === editingSpotId);
+            if (spotIndex !== -1) {
+              spots[spotIndex] = {
+                ...spots[spotIndex],
+                ...updateData,
+                author: data.spot?.author || spots[spotIndex].author
+              };
+            }
+          } else {
+            // 새 포토스팟 추가
+            const newSpot = {
+              ...data.spot,
+              comments: [],
+              liked: false
+            };
+            const spotIndex = spots.findIndex(s => s.id === editingSpotId);
+            if (spotIndex !== -1) {
+              spots[spotIndex] = newSpot;
+            } else {
+              spots.push(newSpot);
+            }
+          }
+          
+          renderSpots();
+          document.getElementById('adminForm').style.display = 'none';
+          editingSpotId = null;
+        } else {
+          alert(`❌ ${data.error || '저장에 실패했습니다.'}`);
+        }
+      } catch (error) {
+        console.error('저장 오류:', error);
+        alert('❌ 서버 연결에 실패했습니다.');
+      }
+    }
+
+    async function deleteSpot() {
+      if(!editingSpotId) return;
+
+      // 로그인 확인
+      if (!authToken || !currentUser) {
+        alert('⚠️ 로그인이 필요합니다.');
+        showLoginModal();
+        return;
+      }
+
+      const spot = spots.find(s => s.id === editingSpotId);
+      if(!spot) return;
+
+      // 권한 확인 (관리자는 모든 스팟 삭제 가능)
+      if (spot.authorId !== currentUser.id && !currentUser.isAdmin) {
+        alert('❌ 삭제 권한이 없습니다. 본인이 작성한 포토스팟만 삭제할 수 있습니다.');
+        return;
+      }
+
+      if(!confirm(`"${spot.name}"을 정말 삭제하시겠습니까?`)) return;
+
+      try {
+        const response = await fetch(`${API_URL}/spots/${editingSpotId}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${authToken}`
+          }
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          alert(`✅ "${spot.name}"이 삭제되었습니다!`);
+          
+          // 로컬 spots 배열에서 해당 포토스팟 제거
+          const spotIndex = spots.findIndex(s => s.id === editingSpotId);
+          if (spotIndex !== -1) {
+            spots.splice(spotIndex, 1);
+          }
+          
+          renderSpots();
+          document.getElementById('adminForm').style.display = 'none';
+          editingSpotId = null;
+        } else {
+          alert(`❌ ${data.error || '삭제에 실패했습니다.'}`);
+        }
+      } catch (error) {
+        console.error('삭제 오류:', error);
+        alert('❌ 서버 연결에 실패했습니다.');
+      }
+    }
+
+    function addNewSpot() {
+      // 로그인 확인
+      if (!authToken || !currentUser) {
+        alert('⚠️ 포토스팟을 추가하려면 로그인이 필요합니다.');
+        showLoginModal();
+        return;
+      }
+
+      const newId = 's' + Date.now(); // 임시 ID
+      const newSpot = {
+        id: newId,
+        name: '새 포토스팟',
+        desc: '설명을 입력하세요',
+        tags: [],
+        lat: 37.5665,
+        lng: 126.9780,
+        img: 'https://images.unsplash.com/photo-1495995424756-f1a20e26bbca?w=600&h=400&fit=crop',
+        comments: [],
+        liked: false,
+        likes: 0,
+        province: '',
+        city: '',
+        district: '',
+        detailAddress: '',
+        address: '',
+        placeName: '',
+        mapImg: '',
+        authorId: null, // 새 포토스팟임을 표시
+        author: currentUser
+      };
+
+      spots.push(newSpot);
+      
+      editingSpotId = newId;
+      loadSpotForEdit(newId);
+      document.getElementById('adminForm').style.display = 'block';
+      alert('✅ 새 포토스팟이 추가되었습니다. 정보를 입력하고 저장하세요!');
+    }
+
+    function cancelEdit() {
+      document.getElementById('adminForm').style.display = 'none';
+      editingSpotId = null;
+    }
+
+    function extractMyData() {
+      // localStorage에서 직접 추출
+      const localData = localStorage.getItem('photoSpots');
+      if (!localData) {
+        alert('⚠️ 저장된 데이터가 없습니다. 관리 페이지에서 먼저 데이터를 수정해주세요.');
+        return;
+      }
+      
+      const blob = new Blob([localData], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `내_포토스팟데이터_${new Date().toISOString().replace(/[:.]/g, '-')}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      alert('✅ 내 데이터가 다운로드되었습니다!\n파일을 저장한 후 개발자에게 전달해주세요.');
+    }
+
+    function exportData() {
+      const dataStr = JSON.stringify(spots, null, 2);
+      const blob = new Blob([dataStr], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `포토스팟데이터_${new Date().toISOString().split('T')[0]}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      alert('✅ 데이터가 내보내졌습니다!');
+    }
+
+    function importData(evt) {
+      const file = evt.target.files && evt.target.files[0];
+      if(!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const json = JSON.parse(String(e.target.result));
+          let importedSpots = [];
+          if(Array.isArray(json)) {
+            importedSpots = json;
+          } else if(Array.isArray(json.spots)) {
+            importedSpots = json.spots;
+          } else if(Array.isArray(json.spotData)) {
+            // 구버전 호환: spotData를 최소 필드만 덮어쓰기
+            importedSpots = spots.map(s => {
+              const found = json.spotData.find(d => d.id === s.id);
+              if(found) {
+                return { ...s, comments: found.comments || [], liked: !!found.liked };
+              }
+              return s;
+            });
+          }
+
+          if(importedSpots.length > 0) {
+            // 정규화
+            spots = importedSpots.map(s => ({
+              id: s.id,
+              name: s.name || '',
+              desc: s.desc || '',
+              tags: Array.isArray(s.tags) ? s.tags : (s.tags ? String(s.tags).split(',').map(t=>t.trim()).filter(Boolean) : []),
+              lat: parseFloat(s.lat) || 0,
+              lng: parseFloat(s.lng) || 0,
+              img: s.img || '',
+              comments: Array.isArray(s.comments) ? s.comments : [],
+              liked: !!s.liked,
+              likes: typeof s.likes === 'number' ? s.likes : 0,
+              address: s.address || '',
+              placeName: s.placeName || '',
+              mapImg: s.mapImg || ''
+            }));
+
+            saveLocalData();
+            initAdminForm();
+            renderSpots();
+            alert('✅ JSON 데이터를 가져와 저장했습니다.');
+          } else {
+            alert('가져올 데이터 형식을 인식하지 못했습니다. (spots 배열 또는 spotData 필요)');
+          }
+        } catch(err) {
+          console.error(err);
+          alert('JSON 파싱에 실패했습니다. 올바른 파일인지 확인하세요.');
+        } finally {
+          evt.target.value = '';
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function searchNaverPlace() {
+      const q = (document.getElementById('placeQuery').value || '').trim();
+      const resultsBox = document.getElementById('placeResults');
+      if(!q) { resultsBox.style.display = 'none'; resultsBox.innerHTML = ''; return; }
+      
+      // 네이버 Geocode API를 사용하지 않고 간단한 안내 표시
+      resultsBox.style.display = 'block';
+      resultsBox.innerHTML = `
+        <div style="padding:15px; background:#fff8e1; border-radius:6px;">
+          <strong>💡 장소 검색 도움말</strong><br>
+          <small style="line-height:1.6; color:#666;">
+          1. <a href="https://map.naver.com" target="_blank" style="color:#0066cc;">네이버 지도</a>에서 "${q}" 검색<br>
+          2. 장소 클릭 → 주소 복사<br>
+          3. 좌표가 필요하면 URL에서 확인 (예: ?lng=126.xxx&lat=37.xxx)<br>
+          4. 아래 필드에 직접 입력
+          </small>
+        </div>
+      `;
+    }
+
+    function applyPlaceResult(lat, lng, address, placeName) {
+      if(!editingSpotId) return;
+      const spot = spots.find(s => s.id === editingSpotId);
+      if(!spot) return;
+      spot.address = address || '';
+      spot.placeName = placeName || '';
+      document.getElementById('editAddress').value = address || '';
+      document.getElementById('editPlaceName').value = placeName || '';
+      document.getElementById('placeResults').style.display = 'none';
+      document.getElementById('placeResults').innerHTML = '';
+    }
+
+    // 페이지 초기화
+    async function initApp() {
+      await checkAuth();
+      await loadSpotsFromServer();
+      renderSpots();
+      updateCityOptions();
+      
+      // 이벤트 리스너 등록
+      const editProvinceSelect = document.getElementById('editProvince');
+      const inlineEditProvinceSelect = document.getElementById('inlineEditProvince');
+      const filterProvinceSelect = document.getElementById('filterProvince');
+      const filterCitySelect = document.getElementById('filterCity');
+      const mapFilterProvinceSelect = document.getElementById('mapFilterProvince');
+      const mapFilterCitySelect = document.getElementById('mapFilterCity');
+      
+      if (editProvinceSelect) {
+        editProvinceSelect.addEventListener('change', updateEditCitySelect);
+      }
+      if (inlineEditProvinceSelect) {
+        inlineEditProvinceSelect.addEventListener('change', updateInlineEditCitySelect);
+      }
+      if (filterProvinceSelect) {
+        filterProvinceSelect.addEventListener('change', updateFilterCitySelect);
+      }
+      if (filterCitySelect) {
+        filterCitySelect.addEventListener('change', applyFilters);
+      }
+    }
+
+    initApp();
   </script>
 </body>
 </html>

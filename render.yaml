@@ -1,0 +1,25 @@
+# Render.com 배포 설정 파일
+services:
+  # 백엔드 API 서버
+  - type: web
+    name: photospot-api
+    env: node
+    buildCommand: cd server && npm install
+    startCommand: cd server && node server.js
+    envVars:
+      - key: PORT
+        value: 3000
+      - key: NODE_ENV
+        value: production
+    healthCheckPath: /api/spots
+
+  # 프론트엔드 (정적 파일)
+  - type: web
+    name: photospot-frontend
+    env: static
+    buildCommand: echo "No build needed"
+    staticPublishPath: ./preview
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html

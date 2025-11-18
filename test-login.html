@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>로그인 테스트</title>
+</head>
+<body>
+  <h1>자동 로그인 테스트</h1>
+  <div id="result"></div>
+  <script>
+    const API_URL = 'http://localhost:3000/api';
+    const resultDiv = document.getElementById('result');
+    
+    async function test() {
+      resultDiv.innerHTML = '<p>테스트 시작...</p>';
+      
+      try {
+        // 1. Codespaces 사용자 확인
+        resultDiv.innerHTML += '<p>1️⃣ Codespaces 사용자 확인 중...</p>';
+        const res1 = await fetch(`${API_URL}/codespaces-user`);
+        const data1 = await res1.json();
+        resultDiv.innerHTML += `<p>✅ 사용자: ${JSON.stringify(data1)}</p>`;
+        
+        // 2. 자동 로그인
+        resultDiv.innerHTML += '<p>2️⃣ 자동 로그인 시도 중...</p>';
+        const res2 = await fetch(`${API_URL}/auth/codespaces`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data1.user)
+        });
+        const data2 = await res2.json();
+        resultDiv.innerHTML += `<p>✅ 로그인 성공: ${JSON.stringify(data2.user)}</p>`;
+        resultDiv.innerHTML += `<p>🔑 토큰: ${data2.token.substring(0, 50)}...</p>`;
+        
+      } catch (error) {
+        resultDiv.innerHTML += `<p style="color:red">❌ 오류: ${error.message}</p>`;
+        console.error(error);
+      }
+    }
+    
+    test();
+  </script>
+</body>
+</html>
