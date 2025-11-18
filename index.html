@@ -1171,6 +1171,12 @@
           <div id="accommodationsList" class="accommodations-list"></div>
         </div>
 
+        <!-- 근처 맛집 추천 -->
+        <div id="nearbyRestaurants" class="nearby-section" style="display: none;">
+          <h3>🍽️ 근처 맛집</h3>
+          <div id="restaurantsList" class="accommodations-list"></div>
+        </div>
+
         <div class="comments-section">
           <h3>💬 댓글 (<span id="totalComments">0</span>)</h3>
           <div class="comment-form">
@@ -1849,6 +1855,9 @@
       
       // 근처 숙박업소 검색
       searchNearbyAccommodations(currentSpot);
+      
+      // 근처 맛집 검색
+      searchNearbyRestaurants(currentSpot);
 
       const detailView = document.getElementById('detailView');
       detailView.classList.add('active');
@@ -2911,6 +2920,54 @@
       } catch (error) {
         console.error('숙박업소 검색 오류:', error);
         accommodationsList.innerHTML = '<div style="text-align: center; padding: 20px; color: #888;">검색 중 오류가 발생했습니다.</div>';
+      }
+    }
+
+    // 근처 맛집 검색
+    async function searchNearbyRestaurants(spot) {
+      const nearbySection = document.getElementById('nearbyRestaurants');
+      const restaurantsList = document.getElementById('restaurantsList');
+      
+      // 좌표가 없으면 숨김
+      if (!spot.lat || !spot.lng) {
+        nearbySection.style.display = 'none';
+        return;
+      }
+
+      nearbySection.style.display = 'block';
+      restaurantsList.innerHTML = '<div style="text-align: center; padding: 20px; color: #888;"><i class="fas fa-spinner fa-spin"></i> 검색 중...</div>';
+
+      try {
+        // 서버에서 근처 맛집 검색
+        const response = await fetch(`http://localhost:3000/api/nearby-restaurants?lat=${spot.lat}&lng=${spot.lng}&radius=1500`);
+        
+        if (!response.ok) {
+          throw new Error('검색 실패');
+        }
+
+        const data = await response.json();
+        
+        if (!data.restaurants || data.restaurants.length === 0) {
+          restaurantsList.innerHTML = '<div style="text-align: center; padding: 20px; color: #888;">근처에 맛집이 없습니다.</div>';
+          return;
+        }
+
+        // 맛집 목록 렌더링
+        restaurantsList.innerHTML = data.restaurants.map(rest => `
+          <div class="accommodation-item" onclick="window.open('https://map.kakao.com/link/to/${encodeURIComponent(rest.name)},${rest.lat},${rest.lng}', '_blank')">
+            <div>
+              <span class="accommodation-category">${rest.category}</span>
+              <div class="accommodation-name">${rest.name}</div>
+            </div>
+            <div class="accommodation-address">📍 ${rest.address}</div>
+            <div class="accommodation-distance">📏 ${rest.distance}m</div>
+            ${rest.phone ? `<div class="accommodation-phone">📞 ${rest.phone}</div>` : ''}
+          </div>
+        `).join('');
+
+      } catch (error) {
+        console.error('맛집 검색 오류:', error);
+        restaurantsList.innerHTML = '<div style="text-align: center; padding: 20px; color: #888;">검색 중 오류가 발생했습니다.</div>';
       }
     }
 
