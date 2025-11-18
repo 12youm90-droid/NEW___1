@@ -733,6 +733,37 @@
       color: #4ecdc4;
     }
 
+    .show-more-btn {
+      width: 100%;
+      padding: 12px;
+      margin-top: 12px;
+      background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%);
+      color: #5a4a3a;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .show-more-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    .show-more-btn.expanded {
+      background: linear-gradient(135deg, #dfe6e9 0%, #b2bec3 100%);
+    }
+
+    .show-more-btn.expanded i {
+      transform: rotate(180deg);
+    }
+
     .comments-section {
       margin-top: 24px;
       padding-top: 24px;
@@ -1169,12 +1200,18 @@
         <div id="nearbyAccommodations" class="nearby-section" style="display: none;">
           <h3>🏨 근처 숙박업소</h3>
           <div id="accommodationsList" class="accommodations-list"></div>
+          <button id="showMoreAccommodations" class="show-more-btn" style="display: none;" onclick="toggleShowMoreAccommodations()">
+            <i class="fas fa-chevron-down"></i> 더보기
+          </button>
         </div>
 
         <!-- 근처 맛집 추천 -->
         <div id="nearbyRestaurants" class="nearby-section" style="display: none;">
           <h3>🍽️ 근처 맛집</h3>
           <div id="restaurantsList" class="accommodations-list"></div>
+          <button id="showMoreRestaurants" class="show-more-btn" style="display: none;" onclick="toggleShowMoreRestaurants()">
+            <i class="fas fa-chevron-down"></i> 더보기
+          </button>
         </div>
 
         <div class="comments-section">
@@ -2882,10 +2919,17 @@
       document.getElementById('placeResults').innerHTML = '';
     }
 
+    // 전역 변수로 숙박업소와 맛집 데이터 저장
+    let allAccommodations = [];
+    let allRestaurants = [];
+    let showingAllAccommodations = false;
+    let showingAllRestaurants = false;
+
     // 근처 숙박업소 검색
     async function searchNearbyAccommodations(spot) {
       const nearbySection = document.getElementById('nearbyAccommodations');
       const accommodationsList = document.getElementById('accommodationsList');
+      const showMoreBtn = document.getElementById('showMoreAccommodations');
       
       // 좌표가 없으면 숨김
       if (!spot.lat || !spot.lng) {
@@ -2895,6 +2939,8 @@
 
       nearbySection.style.display = 'block';
       accommodationsList.innerHTML = '<div style="text-align: center; padding: 20px; color: #888;"><i class="fas fa-spinner fa-spin"></i> 검색 중...</div>';
+      showMoreBtn.style.display = 'none';
+      showingAllAccommodations = false;
 
       try {
         // 서버에서 근처 숙박업소 검색
@@ -2911,18 +2957,8 @@
           return;
         }
 
-        // 숙박업소 목록 렌더링
-        accommodationsList.innerHTML = data.accommodations.map(acc => `
-          <div class="accommodation-item" onclick="window.open('https://map.kakao.com/link/to/${encodeURIComponent(acc.name)},${acc.lat},${acc.lng}', '_blank')">
-            <div>
-              <span class="accommodation-category">${acc.category}</span>
-              <div class="accommodation-name">${acc.name}</div>
-            </div>
-            <div class="accommodation-address">📍 ${acc.address}</div>
-            <div class="accommodation-distance">📏 ${acc.distance}m</div>
-            ${acc.phone ? `<div class="accommodation-phone">📞 ${acc.phone}</div>` : ''}
-          </div>
-        `).join('');
+        allAccommodations = data.accommodations;
+        renderAccommodations(false);
 
       } catch (error) {
         console.error('숙박업소 검색 오류:', error);
@@ -2930,10 +2966,49 @@
       }
     }
 
+    // 숙박업소 렌더링
+    function renderAccommodations(showAll) {
+      const accommodationsList = document.getElementById('accommodationsList');
+      const showMoreBtn = document.getElementById('showMoreAccommodations');
+      
+      const displayCount = showAll ? allAccommodations.length : 2;
+      const itemsToShow = allAccommodations.slice(0, displayCount);
+      
+      accommodationsList.innerHTML = itemsToShow.map(acc => `
+        <div class="accommodation-item" onclick="window.open('https://map.kakao.com/link/to/${encodeURIComponent(acc.name)},${acc.lat},${acc.lng}', '_blank')">
+          <div>
+            <span class="accommodation-category">${acc.category}</span>
+            <div class="accommodation-name">${acc.name}</div>
+          </div>
+          <div class="accommodation-address">📍 ${acc.address}</div>
+          <div class="accommodation-distance">📏 ${acc.distance}m</div>
+          ${acc.phone ? `<div class="accommodation-phone">📞 ${acc.phone}</div>` : ''}
+        </div>
+      `).join('');
+
+      // 더보기 버튼 표시 여부
+      if (allAccommodations.length > 2) {
+        showMoreBtn.style.display = 'block';
+        showMoreBtn.innerHTML = showAll 
+          ? '<i class="fas fa-chevron-up"></i> 접기' 
+          : `<i class="fas fa-chevron-down"></i> 더보기 (${allAccommodations.length - 2}개 더)`;
+        showMoreBtn.classList.toggle('expanded', showAll);
+      } else {
+        showMoreBtn.style.display = 'none';
+      }
+    }
+
+    // 더보기/접기 토글
+    function toggleShowMoreAccommodations() {
+      showingAllAccommodations = !showingAllAccommodations;
+      renderAccommodations(showingAllAccommodations);
+    }
+
     // 근처 맛집 검색
     async function searchNearbyRestaurants(spot) {
       const nearbySection = document.getElementById('nearbyRestaurants');
       const restaurantsList = document.getElementById('restaurantsList');
+      const showMoreBtn = document.getElementById('showMoreRestaurants');
       
       // 좌표가 없으면 숨김
       if (!spot.lat || !spot.lng) {
@@ -2943,6 +3018,8 @@
 
       nearbySection.style.display = 'block';
       restaurantsList.innerHTML = '<div style="text-align: center; padding: 20px; color: #888;"><i class="fas fa-spinner fa-spin"></i> 검색 중...</div>';
+      showMoreBtn.style.display = 'none';
+      showingAllRestaurants = false;
 
       try {
         // 서버에서 근처 맛집 검색
@@ -2959,23 +3036,51 @@
           return;
         }
 
-        // 맛집 목록 렌더링
-        restaurantsList.innerHTML = data.restaurants.map(rest => `
-          <div class="accommodation-item" onclick="window.open('https://map.kakao.com/link/to/${encodeURIComponent(rest.name)},${rest.lat},${rest.lng}', '_blank')">
-            <div>
-              <span class="accommodation-category">${rest.category}</span>
-              <div class="accommodation-name">${rest.name}</div>
-            </div>
-            <div class="accommodation-address">📍 ${rest.address}</div>
-            <div class="accommodation-distance">📏 ${rest.distance}m</div>
-            ${rest.phone ? `<div class="accommodation-phone">📞 ${rest.phone}</div>` : ''}
-          </div>
-        `).join('');
+        allRestaurants = data.restaurants;
+        renderRestaurants(false);
 
       } catch (error) {
         console.error('맛집 검색 오류:', error);
         restaurantsList.innerHTML = '<div style="text-align: center; padding: 20px; color: #888;">검색 중 오류가 발생했습니다.</div>';
       }
+    }
+
+    // 맛집 렌더링
+    function renderRestaurants(showAll) {
+      const restaurantsList = document.getElementById('restaurantsList');
+      const showMoreBtn = document.getElementById('showMoreRestaurants');
+      
+      const displayCount = showAll ? allRestaurants.length : 2;
+      const itemsToShow = allRestaurants.slice(0, displayCount);
+      
+      restaurantsList.innerHTML = itemsToShow.map(rest => `
+        <div class="accommodation-item" onclick="window.open('https://map.kakao.com/link/to/${encodeURIComponent(rest.name)},${rest.lat},${rest.lng}', '_blank')">
+          <div>
+            <span class="accommodation-category">${rest.category}</span>
+            <div class="accommodation-name">${rest.name}</div>
+          </div>
+          <div class="accommodation-address">📍 ${rest.address}</div>
+          <div class="accommodation-distance">📏 ${rest.distance}m</div>
+          ${rest.phone ? `<div class="accommodation-phone">📞 ${rest.phone}</div>` : ''}
+        </div>
+      `).join('');
+
+      // 더보기 버튼 표시 여부
+      if (allRestaurants.length > 2) {
+        showMoreBtn.style.display = 'block';
+        showMoreBtn.innerHTML = showAll 
+          ? '<i class="fas fa-chevron-up"></i> 접기' 
+          : `<i class="fas fa-chevron-down"></i> 더보기 (${allRestaurants.length - 2}개 더)`;
+        showMoreBtn.classList.toggle('expanded', showAll);
+      } else {
+        showMoreBtn.style.display = 'none';
+      }
+    }
+
+    // 더보기/접기 토글
+    function toggleShowMoreRestaurants() {
+      showingAllRestaurants = !showingAllRestaurants;
+      renderRestaurants(showingAllRestaurants);
     }
 
     // 페이지 초기화
